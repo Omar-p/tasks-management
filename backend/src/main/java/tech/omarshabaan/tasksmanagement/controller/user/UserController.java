@@ -24,4 +24,5 @@ public class UserController {
 		UserProfileResponse profile = userService.getUserProfile(userDetails.getUserSecurity());
 		return ResponseEntity.ok(profile);
 	}
+
 }

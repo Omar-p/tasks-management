@@ -6,14 +6,11 @@ import tech.omarshabaan.tasksmanagement.entity.TaskPriority;
 
 import java.time.LocalDateTime;
 
-public record CreateTaskRequest(
-	@NotBlank(message = "Title is required")
-	String title,
+public record CreateTaskRequest(@NotBlank(message = "Title is required") String title,
 
-	String description,
+		String description,
 
-	@NotNull(message = "Priority is required")
-	TaskPriority priority,
+		@NotNull(message = "Priority is required") TaskPriority priority,
 
-	LocalDateTime dueDate
-) {}
+		LocalDateTime dueDate) {
+}

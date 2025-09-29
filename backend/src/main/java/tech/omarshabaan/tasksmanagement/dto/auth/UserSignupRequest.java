@@ -12,11 +12,11 @@ import tech.omarshabaan.tasksmanagement.validation.UniqueUsername;
 
 @PasswordMatch(groups = BasicSignupRequestValidation.class)
 public record UserSignupRequest(
-    @NotNull(groups = BasicSignupRequestValidation.class) @Size(min = 3,
-        groups = BasicSignupRequestValidation.class) @UniqueUsername(
-        groups = AdvancedSignupRequestValidation.class) String username,
-    @NotNull(groups = BasicSignupRequestValidation.class) @Email(
-        groups = BasicSignupRequestValidation.class) @UniqueEmail(
-        groups = AdvancedSignupRequestValidation.class) String email,
-    @PasswordPolicy(groups = BasicSignupRequestValidation.class) String password, String confirmPassword) {
+		@NotNull(groups = BasicSignupRequestValidation.class) @Size(min = 3,
+				groups = BasicSignupRequestValidation.class) @UniqueUsername(
+						groups = AdvancedSignupRequestValidation.class) String username,
+		@NotNull(groups = BasicSignupRequestValidation.class) @Email(
+				groups = BasicSignupRequestValidation.class) @UniqueEmail(
+						groups = AdvancedSignupRequestValidation.class) String email,
+		@PasswordPolicy(groups = BasicSignupRequestValidation.class) String password, String confirmPassword) {
 }

@@ -65,7 +65,8 @@ public class Task extends BaseEntity {
 	protected Task() {
 	}
 
-	public Task(String title, String description, TaskPriority priority, LocalDateTime dueDate, User createdBy, User assignedTo) {
+	public Task(String title, String description, TaskPriority priority, LocalDateTime dueDate, User createdBy,
+			User assignedTo) {
 		this.title = title;
 		this.description = description;
 		this.priority = priority;
@@ -141,4 +142,5 @@ public class Task extends BaseEntity {
 	public void setAssignedTo(User assignedTo) {
 		this.assignedTo = assignedTo;
 	}
+
 }

@@ -27,11 +27,7 @@ public class UserService {
 		User user = userRepository.findByUserSecurity(userSecurity)
 			.orElseThrow(() -> new RuntimeException("User not found"));
 
-		return new UserProfileResponse(
-			user.getUuid(),
-			user.getUsername(),
-			userSecurity.getEmail()
-		);
+		return new UserProfileResponse(user.getUuid(), user.getUsername(), userSecurity.getEmail());
 	}
 
 }

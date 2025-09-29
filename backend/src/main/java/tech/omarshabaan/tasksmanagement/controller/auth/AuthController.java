@@ -35,7 +35,8 @@ public class AuthController {
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<Map<String, String>> signup(@Validated(CompleteSignupRequestValidation.class) @RequestBody UserSignupRequest request) {
+	public ResponseEntity<Map<String, String>> signup(
+			@Validated(CompleteSignupRequestValidation.class) @RequestBody UserSignupRequest request) {
 		logger.info("User registration attempt for email: {}", request.email());
 		authService.registerUser(request);
 		logger.info("User registered successfully for email: {}", request.email());
@@ -44,7 +45,8 @@ public class AuthController {
 	}
 
 	@PostMapping("/signin")
-	public ResponseEntity<UserSigninResponse> signin(@Validated(CompleteSignupRequestValidation.class) @RequestBody UserSigninRequest request,
+	public ResponseEntity<UserSigninResponse> signin(
+			@Validated(CompleteSignupRequestValidation.class) @RequestBody UserSigninRequest request,
 			HttpServletResponse response) {
 		logger.info("User signin attempt for email: {}", request.email());
 		UserSigninResponse signinResponse = authService.authenticateUser(request, response);

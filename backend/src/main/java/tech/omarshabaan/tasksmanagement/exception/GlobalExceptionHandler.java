@@ -28,20 +28,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 		logger.warn("Validation error: {}", ex.getMessage());
 
-    var errors = ex.getBindingResult().getAllErrors()
-        .stream()
-        .map(err -> {
-          if (err instanceof FieldError)
-            return Map.of(((FieldError) err).getField(), err.getDefaultMessage());
-          return Map.of(err.getObjectName(), err.getDefaultMessage());
-        })
-        .map(Map::entrySet)
-        .flatMap(Set::stream)
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
+		var errors = ex.getBindingResult().getAllErrors().stream().map(err -> {
+			if (err instanceof FieldError)
+				return Map.of(((FieldError) err).getField(), err.getDefaultMessage());
+			return Map.of(err.getObjectName(), err.getDefaultMessage());
+		}).map(Map::entrySet).flatMap(Set::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
 		problemDetail.setTitle("Validation Error");

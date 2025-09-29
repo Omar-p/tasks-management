@@ -6,10 +6,6 @@ import tech.omarshabaan.tasksmanagement.entity.TaskStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record TaskSummaryResponse(
-	UUID uuid,
-	String title,
-	TaskStatus status,
-	TaskPriority priority,
-	LocalDateTime dueDate
-) {}
+public record TaskSummaryResponse(UUID uuid, String title, TaskStatus status, TaskPriority priority,
+		LocalDateTime dueDate) {
+}

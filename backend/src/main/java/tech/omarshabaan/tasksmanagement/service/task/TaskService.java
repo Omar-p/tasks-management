@@ -22,6 +22,7 @@ import java.util.UUID;
 public class TaskService {
 
 	private final TaskRepository taskRepository;
+
 	private final UserRepository userRepository;
 
 	public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
@@ -33,35 +34,22 @@ public class TaskService {
 		User user = userRepository.findByUserSecurity(userSecurity)
 			.orElseThrow(() -> new RuntimeException("User not found"));
 
-		Task task = new Task(
-			request.title(),
-			request.description(),
-			request.priority(),
-			request.dueDate(),
-			user,
-			user
-		);
+		Task task = new Task(request.title(), request.description(), request.priority(), request.dueDate(), user, user);
 
 		Task savedTask = taskRepository.save(task);
 		return mapToGetTaskResponse(savedTask);
 	}
 
 	@Transactional(readOnly = true)
-	public Page<TaskSummaryResponse> getUserTasks(UserSecurity userSecurity, Pageable pageable) {
+	public Page<TaskSummaryResponse> getUserTasks(UserSecurity userSecurity, TaskStatus status, Pageable pageable) {
 		User user = userRepository.findByUserSecurity(userSecurity)
 			.orElseThrow(() -> new RuntimeException("User not found"));
 
-		return taskRepository.findByAssignedTo(user, pageable)
-			.map(this::mapToTaskSummaryResponse);
-	}
-
-	@Transactional(readOnly = true)
-	public Page<TaskSummaryResponse> getUserTasksByStatus(UserSecurity userSecurity, TaskStatus status, Pageable pageable) {
-		User user = userRepository.findByUserSecurity(userSecurity)
-			.orElseThrow(() -> new RuntimeException("User not found"));
-
-		return taskRepository.findByAssignedToAndStatus(user, status, pageable)
-			.map(this::mapToTaskSummaryResponse);
+		if (status != null) {
+			return taskRepository.findByAssignedToAndStatus(user, status, pageable).map(this::mapToTaskSummaryResponse);
+		} else {
+			return taskRepository.findByAssignedTo(user, pageable).map(this::mapToTaskSummaryResponse);
+		}
 	}
 
 	@Transactional(readOnly = true)
@@ -113,25 +101,13 @@ public class TaskService {
 	}
 
 	private GetTaskResponse mapToGetTaskResponse(Task task) {
-		return new GetTaskResponse(
-			task.getUuid(),
-			task.getTitle(),
-			task.getDescription(),
-			task.getStatus(),
-			task.getPriority(),
-			task.getDueDate(),
-			task.getCreatedAt(),
-			task.getUpdatedAt()
-		);
+		return new GetTaskResponse(task.getUuid(), task.getTitle(), task.getDescription(), task.getStatus(),
+				task.getPriority(), task.getDueDate(), task.getCreatedAt(), task.getUpdatedAt());
 	}
 
 	private TaskSummaryResponse mapToTaskSummaryResponse(Task task) {
-		return new TaskSummaryResponse(
-			task.getUuid(),
-			task.getTitle(),
-			task.getStatus(),
-			task.getPriority(),
-			task.getDueDate()
-		);
+		return new TaskSummaryResponse(task.getUuid(), task.getTitle(), task.getStatus(), task.getPriority(),
+				task.getDueDate());
 	}
+
 }

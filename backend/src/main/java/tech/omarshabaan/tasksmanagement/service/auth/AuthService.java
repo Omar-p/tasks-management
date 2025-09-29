@@ -36,7 +36,8 @@ public class AuthService {
 	private final RefreshTokenProperties refreshTokenProperties;
 
 	public AuthService(UserAuthService userAuthService, AuthenticationManager authenticationManager,
-			JwtService jwtService, RefreshTokenService refreshTokenService, RefreshTokenProperties refreshTokenProperties) {
+			JwtService jwtService, RefreshTokenService refreshTokenService,
+			RefreshTokenProperties refreshTokenProperties) {
 		this.userAuthService = userAuthService;
 		this.authenticationManager = authenticationManager;
 		this.jwtService = jwtService;

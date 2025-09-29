@@ -37,54 +37,38 @@ public class TaskController {
 	}
 
 	@PostMapping
-	public ResponseEntity<GetTaskResponse> createTask(
-		@Valid @RequestBody CreateTaskRequest request,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+	public ResponseEntity<GetTaskResponse> createTask(@Valid @RequestBody CreateTaskRequest request,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
 		GetTaskResponse response = taskService.createTask(request, userDetails.getUserSecurity());
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@GetMapping
-	public ResponseEntity<Page<TaskSummaryResponse>> getTasks(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestParam(required = false) TaskStatus status,
-		@PageableDefault(size = 20) Pageable pageable
-	) {
-		Page<TaskSummaryResponse> tasks;
-		if (status != null) {
-			tasks = taskService.getUserTasksByStatus(userDetails.getUserSecurity(), status, pageable);
-		} else {
-			tasks = taskService.getUserTasks(userDetails.getUserSecurity(), pageable);
-		}
+	public ResponseEntity<Page<TaskSummaryResponse>> getTasks(@AuthenticationPrincipal CustomUserDetails userDetails,
+			@RequestParam(required = false) TaskStatus status, @PageableDefault(size = 20) Pageable pageable) {
+		Page<TaskSummaryResponse> tasks = taskService.getUserTasks(userDetails.getUserSecurity(), status, pageable);
 		return ResponseEntity.ok(tasks);
 	}
 
 	@GetMapping("/{taskUuid}")
-	public ResponseEntity<GetTaskResponse> getTask(
-		@PathVariable UUID taskUuid,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+	public ResponseEntity<GetTaskResponse> getTask(@PathVariable UUID taskUuid,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
 		GetTaskResponse response = taskService.getTaskByUuid(taskUuid, userDetails.getUserSecurity());
 		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/{taskUuid}")
-	public ResponseEntity<GetTaskResponse> updateTask(
-		@PathVariable UUID taskUuid,
-		@RequestBody UpdateTaskRequest request,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+	public ResponseEntity<GetTaskResponse> updateTask(@PathVariable UUID taskUuid,
+			@RequestBody UpdateTaskRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		GetTaskResponse response = taskService.updateTask(taskUuid, request, userDetails.getUserSecurity());
 		return ResponseEntity.ok(response);
 	}
 
 	@DeleteMapping("/{taskUuid}")
-	public ResponseEntity<Void> deleteTask(
-		@PathVariable UUID taskUuid,
-		@AuthenticationPrincipal CustomUserDetails userDetails
-	) {
+	public ResponseEntity<Void> deleteTask(@PathVariable UUID taskUuid,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
 		taskService.deleteTask(taskUuid, userDetails.getUserSecurity());
 		return ResponseEntity.noContent().build();
 	}
+
 }

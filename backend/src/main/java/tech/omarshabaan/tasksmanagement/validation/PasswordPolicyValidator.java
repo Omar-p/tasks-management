@@ -30,9 +30,9 @@ public class PasswordPolicyValidator implements ConstraintValidator<PasswordPoli
 
 	@Override
 	public boolean isValid(String password, ConstraintValidatorContext context) {
-    if (password == null) {
-      return false;
-    }
+		if (password == null) {
+			return false;
+		}
 
 		List<Rule> passwordRules = new ArrayList<>();
 		passwordRules.add(new LengthRule(8, 128));

@@ -28,12 +28,15 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	Optional<Task> findByUuidAndAssignedTo(UUID uuid, User user);
 
 	@Query("SELECT t FROM Task t WHERE t.createdBy = :user AND t.dueDate BETWEEN :start AND :end")
-	Page<Task> findByCreatedByAndDueDateBetween(@Param("user") User user, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
+	Page<Task> findByCreatedByAndDueDateBetween(@Param("user") User user, @Param("start") LocalDateTime start,
+			@Param("end") LocalDateTime end, Pageable pageable);
 
 	@Query("SELECT t FROM Task t WHERE t.assignedTo = :user AND t.dueDate BETWEEN :start AND :end")
-	Page<Task> findByAssignedToAndDueDateBetween(@Param("user") User user, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
+	Page<Task> findByAssignedToAndDueDateBetween(@Param("user") User user, @Param("start") LocalDateTime start,
+			@Param("end") LocalDateTime end, Pageable pageable);
 
 	long countByCreatedByAndStatus(User user, TaskStatus status);
 
 	long countByAssignedToAndStatus(User user, TaskStatus status);
+
 }

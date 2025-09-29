@@ -132,8 +132,6 @@ public class UserSecurity extends BaseEntity {
 		role.getUsers().remove(this);
 	}
 
-
-
 	public static class Builder {
 
 		private Long id;

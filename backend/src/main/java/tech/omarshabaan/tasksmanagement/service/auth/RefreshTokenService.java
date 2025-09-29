@@ -64,7 +64,6 @@ public class RefreshTokenService {
 		refreshTokenRepository.save(token);
 	}
 
-
 	public void deleteExpiredTokens() {
 		refreshTokenRepository.deleteExpiredTokens(Instant.now());
 	}

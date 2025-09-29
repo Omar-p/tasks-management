@@ -143,4 +143,22 @@ public class Task extends BaseEntity {
 		this.assignedTo = assignedTo;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+
+		if (!(o instanceof Task))
+			return false;
+
+		Task other = (Task) o;
+
+		return uuid != null &&
+			uuid.equals(other.getUuid());
+	}
+
+	@Override
+	public int hashCode() {
+		return getClass().hashCode();
+	}
+
 }

@@ -73,4 +73,22 @@ public class User extends BaseEntity {
 		this.userSecurity = userSecurity;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+
+		if (!(o instanceof User))
+			return false;
+
+		User other = (User) o;
+
+		return uuid != null &&
+			uuid.equals(other.getUuid());
+	}
+
+	@Override
+	public int hashCode() {
+		return getClass().hashCode();
+	}
+
 }

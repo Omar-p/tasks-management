@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: tasks-management
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tasks_management_db
+    username: ${DATABASE_USERNAME:tasks_user}
+    password: ${DATABASE_PASSWORD:tasks_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: ${SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    enabled: true
+
+# RSA key configuration - development uses classpath, production can use mounted files
+rsa:
+  private-key: ${RSA_PRIVATE_KEY_PATH:classpath:certs/private.pem}
+  public-key: ${RSA_PUBLIC_KEY_PATH:classpath:certs/public.pem}
+
+app:
+  security:
+    jwt:
+      access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:1800000} # 30 minutes in milliseconds
+    refresh-token:
+      expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000} # 7 days in milliseconds
+      token:
+        length: ${REFRESH_TOKEN_LENGTH:64} # bytes for secure token generation
+        hash-algorithm: ${REFRESH_TOKEN_HASH_ALGORITHM:SHA-256}
+      cookie:
+        name: ${REFRESH_TOKEN_COOKIE_NAME:refresh_token}
+        secure: ${COOKIE_SECURE:false} # true for production
+        same-site: ${REFRESH_TOKEN_COOKIE_SAME_SITE:strict}
+        http-only: ${REFRESH_TOKEN_COOKIE_HTTP_ONLY:true}
+        max-age: ${REFRESH_TOKEN_COOKIE_MAX_AGE:604800} # 7 days in seconds
+
+logging:
+  level:
+    org.springframework.security: ${SECURITY_LOG_LEVEL:TRACE}
+    org.flywaydb: INFO

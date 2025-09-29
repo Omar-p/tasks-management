@@ -1,11 +1,9 @@
--- Create sequences
 CREATE SEQUENCE IF NOT EXISTS user_security_id_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS users_id_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS roles_id_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS authorities_id_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS refresh_tokens_id_seq START WITH 1 INCREMENT BY 1;
 
--- Create authorities table
 CREATE TABLE authorities
 (
     id         BIGINT PRIMARY KEY DEFAULT nextval('authorities_id_seq'),
@@ -15,7 +13,6 @@ CREATE TABLE authorities
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create roles table
 CREATE TABLE roles
 (
     id         BIGINT PRIMARY KEY DEFAULT nextval('roles_id_seq'),
@@ -25,7 +22,6 @@ CREATE TABLE roles
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create user_security table
 CREATE TABLE user_security
 (
     id         BIGINT PRIMARY KEY DEFAULT nextval('user_security_id_seq'),
@@ -39,7 +35,6 @@ CREATE TABLE user_security
     CONSTRAINT user_security_email_key UNIQUE (email)
 );
 
--- Create users table
 CREATE TABLE users
 (
     id              BIGINT PRIMARY KEY DEFAULT nextval('users_id_seq'),
@@ -52,7 +47,6 @@ CREATE TABLE users
     CONSTRAINT fk_users_user_security FOREIGN KEY (user_security_id) REFERENCES user_security (id) ON DELETE CASCADE
 );
 
--- Create refresh_tokens table
 CREATE TABLE refresh_tokens
 (
     id          BIGINT PRIMARY KEY DEFAULT nextval('refresh_tokens_id_seq'),
@@ -66,7 +60,6 @@ CREATE TABLE refresh_tokens
     CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES user_security (id) ON DELETE CASCADE
 );
 
--- Create role_authorities junction table
 CREATE TABLE roles_authorities
 (
     role_id      BIGINT NOT NULL,
@@ -76,7 +69,6 @@ CREATE TABLE roles_authorities
     CONSTRAINT fk_roles_authorities_authority FOREIGN KEY (authority_id) REFERENCES authorities (id) ON DELETE CASCADE
 );
 
--- Create user_roles junction table
 CREATE TABLE user_roles
 (
     user_id BIGINT NOT NULL,
@@ -86,7 +78,6 @@ CREATE TABLE user_roles
     CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE CASCADE
 );
 
--- Create indexes for better performance
 CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens (user_id);
 CREATE INDEX idx_refresh_tokens_token ON refresh_tokens USING HASH (token);
 CREATE INDEX idx_refresh_tokens_expiry_date ON refresh_tokens (expiry_date);

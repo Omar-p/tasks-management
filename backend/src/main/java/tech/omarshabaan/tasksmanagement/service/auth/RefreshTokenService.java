@@ -29,7 +29,6 @@ public class RefreshTokenService {
 	}
 
 	public RefreshToken createRefreshToken(UserSecurity user) {
-		// Revoke all existing refresh tokens for the user
 		refreshTokenRepository.revokeAllByUser(user);
 
 		String rawToken = generateSecureToken();
@@ -42,7 +41,6 @@ public class RefreshTokenService {
 		refreshToken.setRevoked(false);
 
 		RefreshToken savedToken = refreshTokenRepository.save(refreshToken);
-		// Return the raw token to the caller, but store the hash
 		savedToken.setToken(rawToken);
 		return savedToken;
 	}

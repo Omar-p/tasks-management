@@ -27,7 +27,6 @@ public class CustomUserDetails implements UserDetails {
 			.map(authority -> new SimpleGrantedAuthority(authority.getName().name()))
 			.collect(Collectors.toSet());
 
-		// Add roles as authorities with ROLE_ prefix
 		Set<GrantedAuthority> roleAuthorities = userSecurity.getRoles()
 			.stream()
 			.map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))

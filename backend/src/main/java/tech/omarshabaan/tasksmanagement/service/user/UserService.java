@@ -2,7 +2,9 @@ package tech.omarshabaan.tasksmanagement.service.user;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
+import tech.omarshabaan.tasksmanagement.dto.user.UserProfileResponse;
 import tech.omarshabaan.tasksmanagement.entity.User;
+import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
 import tech.omarshabaan.tasksmanagement.event.UserSecurityCreatedEvent;
 import tech.omarshabaan.tasksmanagement.repository.user.UserRepository;
 
@@ -19,6 +21,17 @@ public class UserService {
 	public void handleUserSecurityCreatedEvent(UserSecurityCreatedEvent event) {
 		var user = new User(event.username(), event.userSecurity());
 		userRepository.save(user);
+	}
+
+	public UserProfileResponse getUserProfile(UserSecurity userSecurity) {
+		User user = userRepository.findByUserSecurity(userSecurity)
+			.orElseThrow(() -> new RuntimeException("User not found"));
+
+		return new UserProfileResponse(
+			user.getUuid(),
+			user.getUsername(),
+			userSecurity.getEmail()
+		);
 	}
 
 }

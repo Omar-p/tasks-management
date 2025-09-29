@@ -1,19 +1,14 @@
 package tech.omarshabaan.tasksmanagement.dto.task;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import tech.omarshabaan.tasksmanagement.entity.TaskPriority;
+import tech.omarshabaan.tasksmanagement.entity.TaskStatus;
 
 import java.time.LocalDateTime;
 
-public record CreateTaskRequest(
-	@NotBlank(message = "Title is required")
+public record UpdateTaskRequest(
 	String title,
-
 	String description,
-
-	@NotNull(message = "Priority is required")
+	TaskStatus status,
 	TaskPriority priority,
-
 	LocalDateTime dueDate
 ) {}

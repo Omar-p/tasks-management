@@ -88,7 +88,7 @@ public class User extends BaseEntity {
 
 	@Override
 	public int hashCode() {
-		return getClass().hashCode();
+		return uuid != null ? uuid.hashCode() : 0;
 	}
 
 }

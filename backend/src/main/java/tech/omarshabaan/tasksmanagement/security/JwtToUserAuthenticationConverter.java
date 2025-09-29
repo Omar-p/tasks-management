@@ -25,9 +25,6 @@ public class JwtToUserAuthenticationConverter implements Converter<Jwt, Abstract
 
 	@Override
 	public AbstractAuthenticationToken convert(Jwt jwt) {
-		logger.debug("Converting JWT to authentication token. Subject: {}, Email claim: {}",
-			jwt.getSubject(), jwt.getClaimAsString("email"));
-
 		UUID userUuid = UUID.fromString(jwt.getSubject());
 
 		UserSecurity userSecurity = userSecurityRepository.findByUuid(userUuid)
@@ -36,11 +33,7 @@ public class JwtToUserAuthenticationConverter implements Converter<Jwt, Abstract
 				return new RuntimeException("UserSecurity not found for UUID: " + userUuid);
 			});
 
-		logger.debug("Found UserSecurity with email: {} for UUID: {}", userSecurity.getEmail(), userUuid);
-
 		CustomUserDetails userDetails = new CustomUserDetails(userSecurity);
-
-		logger.debug("Successfully created authentication token for user: {}", userSecurity.getEmail());
 
 		return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 	}

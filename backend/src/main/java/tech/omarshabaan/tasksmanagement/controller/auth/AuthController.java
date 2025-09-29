@@ -2,8 +2,6 @@ package tech.omarshabaan.tasksmanagement.controller.auth;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,7 +24,6 @@ import java.util.Map;
 @Validated
 public class AuthController {
 
-	private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
 	private final AuthService authService;
 
@@ -37,10 +34,7 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<Map<String, String>> signup(
 			@Validated(CompleteSignupRequestValidation.class) @RequestBody UserSignupRequest request) {
-		logger.info("User registration attempt for email: {}", request.email());
 		authService.registerUser(request);
-		logger.info("User registered successfully for email: {}", request.email());
-
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
@@ -48,9 +42,7 @@ public class AuthController {
 	public ResponseEntity<UserSigninResponse> signin(
 			@Validated(CompleteSignupRequestValidation.class) @RequestBody UserSigninRequest request,
 			HttpServletResponse response) {
-		logger.info("User signin attempt for email: {}", request.email());
 		UserSigninResponse signinResponse = authService.authenticateUser(request, response);
-		logger.info("User signed in successfully for email: {}", request.email());
 		return ResponseEntity.ok(signinResponse);
 	}
 
@@ -60,13 +52,10 @@ public class AuthController {
 			HttpServletResponse response) {
 
 		if (refreshTokenValue == null) {
-			logger.warn("Refresh token attempt without token");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
-		logger.info("Token refresh attempt");
 		UserSigninResponse refreshResponse = authService.refreshAccessToken(refreshTokenValue, response);
-		logger.info("Token refreshed successfully");
 		return ResponseEntity.ok(refreshResponse);
 	}
 
@@ -74,10 +63,7 @@ public class AuthController {
 	public ResponseEntity<Map<String, String>> logout(
 			@CookieValue(name = "${app.security.refresh-token.cookie.name}") String refreshTokenValue,
 			HttpServletResponse response) {
-		logger.info("User logout attempt");
 		authService.logoutUser(refreshTokenValue, response);
-		logger.info("User logged out successfully");
-
 		return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
 	}
 

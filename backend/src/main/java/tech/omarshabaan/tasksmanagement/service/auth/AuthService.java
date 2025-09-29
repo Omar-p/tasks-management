@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class AuthService {
 
+
 	private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
 	private final UserAuthService userAuthService;
@@ -46,13 +47,12 @@ public class AuthService {
 	}
 
 	public void registerUser(UserSignupRequest request) {
-		logger.info("Registering new user with email: {}", request.email());
+		logger.info("User registration for email: {}", request.email());
 		userAuthService.saveUserSecurity(request);
-		logger.info("User registration completed for email: {}", request.email());
 	}
 
 	public UserSigninResponse authenticateUser(UserSigninRequest request, HttpServletResponse response) {
-		logger.info("Authenticating user with email: {}", request.email());
+		logger.info("User signin attempt for email: {}", request.email());
 
 		Authentication authentication = authenticationManager
 			.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
@@ -63,12 +63,12 @@ public class AuthService {
 		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUserSecurity());
 		setRefreshTokenCookie(response, refreshToken.getToken());
 
-		logger.info("User authentication successful for email: {}, access token generated", request.email());
+		logger.info("User authenticated successfully for email: {}", request.email());
 		return new UserSigninResponse(accessToken);
 	}
 
 	public UserSigninResponse refreshAccessToken(String refreshTokenValue, HttpServletResponse response) {
-		logger.info("Refreshing access token");
+		logger.info("Token refresh attempt");
 
 		RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenValue)
 			.orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));
@@ -90,7 +90,7 @@ public class AuthService {
 		RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(userSecurity);
 		setRefreshTokenCookie(response, newRefreshToken.getToken());
 
-		logger.info("Access token refreshed successfully for user: {}", userSecurity.getEmail());
+		logger.info("Token refreshed successfully for user: {}", userSecurity.getEmail());
 		return new UserSigninResponse(accessToken);
 	}
 
@@ -100,15 +100,13 @@ public class AuthService {
 			throw new InvalidRefreshTokenException("Refresh token is required for logout");
 		}
 
-		logger.info("Processing user logout");
+		logger.info("User logout initiated");
 		RefreshToken token = refreshTokenService.findByToken(refreshTokenValue)
 			.orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));
 
 		refreshTokenService.revokeToken(token);
-		logger.info("Refresh token revoked successfully for user: {}", token.getUser().getEmail());
-
 		clearRefreshTokenCookie(response);
-		logger.info("User logout completed successfully");
+		logger.info("User logout completed");
 	}
 
 	private void setRefreshTokenCookie(HttpServletResponse response, String tokenValue) {

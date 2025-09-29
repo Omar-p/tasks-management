@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import tech.omarshabaan.tasksmanagement.security.JwtToUserAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,9 +35,11 @@ import java.util.Arrays;
 public class SecurityConfig {
 
 	private final RsaKeyProperties rsaKeys;
+	private final JwtToUserAuthenticationConverter jwtToUserAuthenticationConverter;
 
-	public SecurityConfig(RsaKeyProperties rsaKeys) {
+	public SecurityConfig(RsaKeyProperties rsaKeys, JwtToUserAuthenticationConverter jwtToUserAuthenticationConverter) {
 		this.rsaKeys = rsaKeys;
+		this.jwtToUserAuthenticationConverter = jwtToUserAuthenticationConverter;
 	}
 
 	@Bean
@@ -67,7 +70,7 @@ public class SecurityConfig {
 				.anyRequest()
 				.authenticated())
 			.oauth2ResourceServer(oauth2 -> oauth2
-				.jwt(jwt -> jwt.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthenticationConverter())))
+				.jwt(jwt -> jwt.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtToUserAuthenticationConverter)))
 			.build();
 	}
 

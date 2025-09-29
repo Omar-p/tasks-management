@@ -47,7 +47,8 @@ public class TaskService {
 
 		if (status != null) {
 			return taskRepository.findByAssignedToAndStatus(user, status, pageable).map(this::mapToTaskSummaryResponse);
-		} else {
+		}
+		else {
 			return taskRepository.findByAssignedTo(user, pageable).map(this::mapToTaskSummaryResponse);
 		}
 	}

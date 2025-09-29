@@ -7,9 +7,10 @@ import tech.omarshabaan.tasksmanagement.entity.User;
 import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
 import tech.omarshabaan.tasksmanagement.event.UserSecurityCreatedEvent;
 import tech.omarshabaan.tasksmanagement.repository.user.UserRepository;
+import tech.omarshabaan.tasksmanagement.service.task.UserLookupService;
 
 @Service
-public class UserService {
+public class UserService implements UserLookupService {
 
 	private final UserRepository userRepository;
 
@@ -23,10 +24,14 @@ public class UserService {
 		userRepository.save(user);
 	}
 
-	public UserProfileResponse getUserProfile(UserSecurity userSecurity) {
-		User user = userRepository.findByUserSecurity(userSecurity)
+	@Override
+	public User findUserByUserSecurity(UserSecurity userSecurity) {
+		return userRepository.findByUserSecurity(userSecurity)
 			.orElseThrow(() -> new RuntimeException("User not found"));
+	}
 
+	public UserProfileResponse getUserProfile(UserSecurity userSecurity) {
+		User user = findUserByUserSecurity(userSecurity);
 		return new UserProfileResponse(user.getUuid(), user.getUsername(), userSecurity.getEmail());
 	}
 

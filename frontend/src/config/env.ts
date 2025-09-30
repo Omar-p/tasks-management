@@ -40,8 +40,7 @@ export const getApiBaseUrl = (): string => {
   }
 
   const fromEnv =
-    readFromViteEnv("VITE_API_BASE_URL") ??
-    readFromProcessEnv("VITE_API_BASE_URL");
+    readFromViteEnv("VITE_API_URL") ?? readFromProcessEnv("VITE_API_URL");
   const resolved = fromEnv ? sanitizeBaseUrl(fromEnv) : DEFAULT_API_BASE_URL;
 
   cachedBaseUrl = resolved;

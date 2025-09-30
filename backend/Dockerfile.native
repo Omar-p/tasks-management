@@ -1,0 +1,28 @@
+FROM ghcr.io/graalvm/graalvm-community:25.0.0 AS builder
+
+WORKDIR /app
+
+COPY mvnw .
+COPY .mvn .mvn
+RUN chmod +x mvnw
+
+COPY pom.xml .
+RUN ./mvnw dependency:go-offline -B
+
+COPY src src
+
+RUN ./mvnw clean -Dnet.bytebuddy.experimental=true -Pnative native:compile -DskipTests
+
+FROM alpine:3.19
+
+RUN apk add --no-cache \
+    curl \
+    zlib \
+    libc6-compat
+
+WORKDIR /app
+
+COPY --from=builder /app/target/tasks-management ./tasks-management
+
+EXPOSE 8080
+ENTRYPOINT ["./tasks-management"]

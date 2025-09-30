@@ -1,0 +1,63 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yaml'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  JAVA_VERSION: '25'
+  AWS_REGION: 'eu-central-1'
+
+jobs:
+  backend-ci:
+    name: Build & Test (Spring Boot Java 25)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            **/target
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run formatting check
+        run: ./mvnw spring-javaformat:validate
+
+      - name: Build & run unit tests with coverage
+        run: ./mvnw clean verify -DskipIntegrationTests=false
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./backend/target/site/jacoco/jacoco.xml
+          fail_ci_if_error: false
+
+      # Optional: build native image (GraalVM)
+      - name: Build native image
+        run: ./mvnw -Pnative native:compile -DskipTests

@@ -1,27 +1,26 @@
 import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { useTheme } from "@/contexts/ThemeProvider";
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const { theme, resolvedTheme } = useTheme();
+  const themeProp: ToasterProps["theme"] =
+    theme === "system" ? "system" : resolvedTheme;
+
   return (
     <Sonner
-      theme="light"
+      theme={themeProp}
       className="toaster group"
       duration={4000}
-      style={
-        {
-          "--normal-bg": "hsl(0 0% 100%)",
-          "--normal-text": "hsl(222.2 84% 4.9%)",
-          "--normal-border": "hsl(214.3 31.8% 91.4%)",
-        } as React.CSSProperties
-      }
       toastOptions={{
-        style: {
-          background: "white",
-          color: "hsl(222.2 84% 4.9%)",
-          border: "1px solid hsl(214.3 31.8% 91.4%)",
+        classNames: {
+          toast:
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border shadow-lg",
+          description: "group-[.toast]:text-muted-foreground",
+          actionButton:
+            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+          cancelButton:
+            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
-        className: "group toast group-[.toaster]:text-foreground",
-        descriptionClassName:
-          "group-[.toast]:text-muted-foreground group-[.toast]:text-gray-700",
       }}
       {...props}
     />

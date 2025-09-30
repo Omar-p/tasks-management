@@ -10,11 +10,13 @@ type Theme = "dark" | "light" | "system";
 
 type ThemeProviderState = {
   theme: Theme;
+  resolvedTheme: Exclude<Theme, "system">;
   setTheme: (theme: Theme) => void;
 };
 
 const ThemeContext = createContext<ThemeProviderState>({
   theme: "system",
+  resolvedTheme: "light",
   setTheme: () => {},
 });
 
@@ -42,6 +44,16 @@ const darkMuiTheme = createTheme({
   },
 });
 
+const getSystemPreference = (): Exclude<Theme, "system"> => {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+};
+
 export function ThemeProvider({
   children,
   defaultTheme = "system",
@@ -50,35 +62,42 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     getItem(storageKey) ?? defaultTheme,
   );
+  const [systemTheme, setSystemTheme] = useState<Exclude<Theme, "system">>(
+    getSystemPreference,
+  );
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-      setItem(storageKey, systemTheme);
+    if (typeof window === "undefined") {
       return;
     }
 
-    root.classList.add(theme);
-    setItem(storageKey, theme);
-  }, [theme, storageKey]);
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setSystemTheme(event.matches ? "dark" : "light");
+    };
 
-  // ✅ pick MUI theme based on your context
-  const muiTheme =
-    theme === "dark"
-      ? darkMuiTheme
-      : theme === "light"
-        ? lightMuiTheme
-        : lightMuiTheme;
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+
+    const appliedTheme = theme === "system" ? systemTheme : theme;
+    root.classList.add(appliedTheme);
+    setItem(storageKey, appliedTheme);
+  }, [theme, storageKey, systemTheme]);
+
+  const resolvedTheme = theme === "system" ? systemTheme : theme;
+  const muiTheme = resolvedTheme === "dark" ? darkMuiTheme : lightMuiTheme;
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
       <MuiThemeProvider theme={muiTheme}>
         <CssBaseline />
         {children}

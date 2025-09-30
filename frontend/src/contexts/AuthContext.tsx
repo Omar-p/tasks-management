@@ -79,7 +79,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (credentials: import("./auth.types").LoginRequest) => {
     const tokens = await authApi.signin(credentials);
-    setTokens(tokens);
+    setAccessToken(tokens.accessToken);
+
+    // Fetch user profile after successful signin
+    try {
+      const userProfile = await authApi.getProfile();
+      localStorage.setItem("user_data", JSON.stringify(userProfile));
+      setUser(userProfile);
+    } catch (error) {
+      console.error("Failed to fetch user profile after signin:", error);
+      // Clear tokens if profile fetch fails
+      setAccessToken(null);
+      throw error;
+    }
+
     return tokens;
   };
 

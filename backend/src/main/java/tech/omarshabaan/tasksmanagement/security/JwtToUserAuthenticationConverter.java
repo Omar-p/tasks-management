@@ -27,14 +27,14 @@ public class JwtToUserAuthenticationConverter implements Converter<Jwt, Abstract
 	public AbstractAuthenticationToken convert(Jwt jwt) {
 		UUID userUuid = UUID.fromString(jwt.getSubject());
 
-		UserSecurity userSecurity = userSecurityRepository.findByUuid(userUuid)
-			.orElseThrow(() -> {
-				logger.error("UserSecurity not found for UUID: {} from JWT subject", userUuid);
-				return new RuntimeException("UserSecurity not found for UUID: " + userUuid);
-			});
+		UserSecurity userSecurity = userSecurityRepository.findByUuid(userUuid).orElseThrow(() -> {
+			logger.error("UserSecurity not found for UUID: {} from JWT subject", userUuid);
+			return new RuntimeException("UserSecurity not found for UUID: " + userUuid);
+		});
 
 		CustomUserDetails userDetails = new CustomUserDetails(userSecurity);
 
 		return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 	}
+
 }

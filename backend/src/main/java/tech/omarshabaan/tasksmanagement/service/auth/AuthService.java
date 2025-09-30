@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import tech.omarshabaan.tasksmanagement.config.RefreshTokenProperties;
+import tech.omarshabaan.tasksmanagement.dto.auth.RefreshTokenResponse;
 import tech.omarshabaan.tasksmanagement.dto.auth.UserSigninRequest;
 import tech.omarshabaan.tasksmanagement.dto.auth.UserSigninResponse;
 import tech.omarshabaan.tasksmanagement.dto.auth.UserSignupRequest;
@@ -22,7 +23,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
-
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
@@ -60,8 +60,8 @@ public class AuthService {
 		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 		String accessToken = jwtService.generateAccessToken(userDetails);
 
-		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUserSecurity());
-		setRefreshTokenCookie(response, refreshToken.getToken());
+		RefreshTokenResponse refreshToken = refreshTokenService.createRefreshToken(userDetails.getUserSecurity());
+		setRefreshTokenCookie(response, refreshToken.rawToken());
 
 		logger.info("User authenticated successfully for email: {}", request.email());
 		return new UserSigninResponse(accessToken);
@@ -87,8 +87,8 @@ public class AuthService {
 
 		String accessToken = jwtService.generateAccessToken(userSecurity, authorities);
 
-		RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(userSecurity);
-		setRefreshTokenCookie(response, newRefreshToken.getToken());
+		RefreshTokenResponse newRefreshToken = refreshTokenService.createRefreshToken(userSecurity);
+		setRefreshTokenCookie(response, newRefreshToken.rawToken());
 
 		logger.info("Token refreshed successfully for user: {}", userSecurity.getEmail());
 		return new UserSigninResponse(accessToken);

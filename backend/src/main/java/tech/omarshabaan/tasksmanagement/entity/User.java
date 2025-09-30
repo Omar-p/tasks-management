@@ -75,15 +75,15 @@ public class User extends BaseEntity {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
+		if (this == o)
+			return true;
 
 		if (!(o instanceof User))
 			return false;
 
 		User other = (User) o;
 
-		return uuid != null &&
-			uuid.equals(other.getUuid());
+		return uuid != null && uuid.equals(other.getUuid());
 	}
 
 	@Override

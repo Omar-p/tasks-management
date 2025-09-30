@@ -35,6 +35,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
 	private final RsaKeyProperties rsaKeys;
+
 	private final JwtToUserAuthenticationConverter jwtToUserAuthenticationConverter;
 
 	public SecurityConfig(RsaKeyProperties rsaKeys, JwtToUserAuthenticationConverter jwtToUserAuthenticationConverter) {

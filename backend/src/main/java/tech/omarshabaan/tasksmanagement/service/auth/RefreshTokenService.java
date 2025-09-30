@@ -3,6 +3,7 @@ package tech.omarshabaan.tasksmanagement.service.auth;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.omarshabaan.tasksmanagement.config.RefreshTokenProperties;
+import tech.omarshabaan.tasksmanagement.dto.auth.RefreshTokenResponse;
 import tech.omarshabaan.tasksmanagement.entity.RefreshToken;
 import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
 import tech.omarshabaan.tasksmanagement.exception.InvalidRefreshTokenException;
@@ -28,7 +29,7 @@ public class RefreshTokenService {
 		this.properties = properties;
 	}
 
-	public RefreshToken createRefreshToken(UserSecurity user) {
+	public RefreshTokenResponse createRefreshToken(UserSecurity user) {
 		refreshTokenRepository.revokeAllByUser(user);
 
 		String rawToken = generateSecureToken();
@@ -41,8 +42,7 @@ public class RefreshTokenService {
 		refreshToken.setRevoked(false);
 
 		RefreshToken savedToken = refreshTokenRepository.save(refreshToken);
-		savedToken.setToken(rawToken);
-		return savedToken;
+		return new RefreshTokenResponse(savedToken, rawToken);
 	}
 
 	@Transactional(readOnly = true)

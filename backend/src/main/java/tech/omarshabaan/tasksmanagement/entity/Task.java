@@ -145,15 +145,15 @@ public class Task extends BaseEntity {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
+		if (this == o)
+			return true;
 
 		if (!(o instanceof Task))
 			return false;
 
 		Task other = (Task) o;
 
-		return uuid != null &&
-			uuid.equals(other.getUuid());
+		return uuid != null && uuid.equals(other.getUuid());
 	}
 
 	@Override

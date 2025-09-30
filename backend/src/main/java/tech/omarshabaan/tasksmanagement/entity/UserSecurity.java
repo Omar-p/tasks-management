@@ -196,15 +196,15 @@ public class UserSecurity extends BaseEntity {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
+		if (this == o)
+			return true;
 
 		if (!(o instanceof UserSecurity))
 			return false;
 
 		UserSecurity other = (UserSecurity) o;
 
-		return uuid != null &&
-			uuid.equals(other.getUuid());
+		return uuid != null && uuid.equals(other.getUuid());
 	}
 
 	@Override

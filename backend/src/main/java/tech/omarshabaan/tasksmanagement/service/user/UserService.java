@@ -12,7 +12,6 @@ import tech.omarshabaan.tasksmanagement.service.task.UserLookupService;
 @Service
 public class UserService implements UserLookupService {
 
-
 	private final UserRepository userRepository;
 
 	public UserService(UserRepository userRepository) {

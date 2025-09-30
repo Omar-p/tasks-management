@@ -43,7 +43,7 @@ public class TaskController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@GetMapping
+	@GetMapping("/me")
 	public ResponseEntity<Page<TaskSummaryResponse>> getTasks(@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam(required = false) TaskStatus status, @PageableDefault(size = 20) Pageable pageable) {
 		Page<TaskSummaryResponse> tasks = taskService.getUserTasks(userDetails.getUserSecurity(), status, pageable);

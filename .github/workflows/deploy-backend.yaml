@@ -37,7 +37,7 @@ jobs:
           cache: maven
 
       - name: Build & Run Tests
-        run: ./mvnw clean verify
+        run: ./mvnw -Dnet.bytebuddy.experimental=true clean verify
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4

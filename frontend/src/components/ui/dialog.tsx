@@ -24,9 +24,9 @@ const FOCUSABLE_SELECTORS =
 const getFocusableElements = (container: HTMLElement | null) => {
   if (!container) return [] as HTMLElement[];
 
-  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter(
-    (element) => !element.hasAttribute("data-focus-guard"),
-  );
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS),
+  ).filter((element) => !element.hasAttribute("data-focus-guard"));
 };
 
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
@@ -119,7 +119,9 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         }
 
         const activeElement = document.activeElement as HTMLElement | null;
-        const currentIndex = focusable.findIndex((element) => element === activeElement);
+        const currentIndex = focusable.findIndex(
+          (element) => element === activeElement,
+        );
         const lastIndex = focusable.length - 1;
 
         if (event.shiftKey) {

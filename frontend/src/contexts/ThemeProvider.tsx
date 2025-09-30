@@ -62,9 +62,8 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     getItem(storageKey) ?? defaultTheme,
   );
-  const [systemTheme, setSystemTheme] = useState<Exclude<Theme, "system">>(
-    getSystemPreference,
-  );
+  const [systemTheme, setSystemTheme] =
+    useState<Exclude<Theme, "system">>(getSystemPreference);
 
   useEffect(() => {
     if (typeof window === "undefined") {

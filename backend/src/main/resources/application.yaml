@@ -3,10 +3,9 @@ spring:
     name: tasks-management
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/tasks_management_db
-    username: ${DATABASE_USERNAME:tasks_user}
-    password: ${DATABASE_PASSWORD:tasks_password}
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 
   jpa:
     hibernate:

@@ -1,0 +1,548 @@
+  AWSTemplateFormatVersion: "2010-09-09"
+
+  Description: 'ECS backed by ec2 instance and rds instance'
+
+  Parameters:
+
+    EcsClusterName:
+      Description: ecs cluster name
+      Type: String
+      Default: ejada-tasks-management-ecs-cluster
+
+    TaskDefinitionFamily:
+      Description: task definition family
+      Type: String
+      Default: ejada-tasks-management-backend
+
+    ContainerCloudWatchLogGroupName:
+      Description: task definition family
+      Type: String
+      Default: /app/ejada/tasks-managements-log-group
+
+    ContainerName:
+      Description: main container name
+      Type: String
+      Default: ejada-interview-backend-container
+
+    EcsServiceName:
+      Description: ecs service name
+      Type: String
+      Default: ejada-interview-ecs-service
+
+    KeyName:
+      Description: keypair name which will be used to connect to the ec2 instance
+      Type: String
+      Default: ejada-tasks-management-key-pair
+
+    DockerImageName:
+      Description: image name for the backend
+      Type: String
+      Default: ejada-tasks-management
+
+
+    AppName:
+      Description: image name for the backend
+      Type: String
+      Default: ejada
+
+    VpcStackName:
+      Description: existing vpc stack name
+      Type: String
+      Default: ejada-tasks-management-vpc-stack
+
+    EcsEC2AMI:
+      Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+      Default: /aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id
+      Description: The Amazon Machine Image ID used for the cluster; latest Amazon ECS-optimized Amazon Linux 2 image ID
+
+
+    InstanceType:
+      Description: WebServer EC2 instance type
+      Type: String
+      AllowedValues:
+        - t2.nano
+        - t2.micro
+        - t2.small
+        - t2.medium
+        - t2.large
+        - t2.xlarge
+        - t2.2xlarge
+        - t3.nano
+        - t3.micro
+        - t3.small
+        - t3.medium
+        - t3.large
+        - t3.xlarge
+        - t3.2xlarge
+        - m4.large
+        - m4.xlarge
+        - m4.2xlarge
+        - m4.4xlarge
+        - m4.10xlarge
+        - m5.large
+        - m5.xlarge
+        - m5.2xlarge
+        - m5.4xlarge
+        - c5.large
+        - c5.xlarge
+        - c5.2xlarge
+        - c5.4xlarge
+        - c5.9xlarge
+        - g3.8xlarge
+        - r5.large
+        - r5.xlarge
+        - r5.2xlarge
+        - r5.4xlarge
+        - i3.xlarge
+        - i3.2xlarge
+        - i3.4xlarge
+        - i3.8xlarge
+        - d2.xlarge
+        - d2.2xlarge
+        - d2.4xlarge
+        - d2.8xlarge
+      Default: t2.micro
+      ConstraintDescription: must be a valid EC2 instance type.
+
+    DBInstanceType:
+      Description: RDS DB instance type
+      Type: String
+      Default: db.t3.micro
+      AllowedValues:
+        - db.t2.micro
+        - db.t2.small
+        - db.t2.medium
+        - db.t3.micro
+        - db.t3.small
+        - db.t3.medium
+        - db.t3.large
+        - db.t3.xlarge
+        - db.t3.2xlarge
+        - db.m4.large
+        - db.m4.xlarge
+        - db.m4.2xlarge
+        - db.m4.4xlarge
+        - db.m4.10xlarge
+      ConstraintDescription: must be a valid RDS DB instance type.
+
+    SSHLocation:
+      Description: The IP address range that can be used to SSH to the EC2 instances
+      Type: String
+      Default: 0.0.0.0/0
+      MinLength: 9
+      MaxLength: 18
+      AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+      ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+
+
+  Resources:
+
+    EcsCluster:
+      Type: AWS::ECS::Cluster
+      Properties:
+        ClusterName: !Ref EcsClusterName
+
+
+    EcsService:
+      Type: AWS::ECS::Service
+      Properties:
+        Cluster: !Ref EcsCluster
+        DesiredCount: 0
+        DeploymentConfiguration:
+          MaximumPercent: 100
+          MinimumHealthyPercent: 0
+        LaunchType: EC2
+        ServiceName: !Ref EcsServiceName
+        TaskDefinition: !Ref TaskDefinition
+
+    EcsEC2KeyPair:
+      Type: AWS::EC2::KeyPair
+      Properties:
+        KeyName: !Ref KeyName
+
+    EcsEC2Instance:
+      Type: AWS::EC2::Instance
+      Properties:
+        InstanceType: !Ref InstanceType
+        IamInstanceProfile: !Ref EcsEC2InstanceProfile
+        SubnetId:
+          Fn::ImportValue:
+            Fn::Sub: "${AWS::Region}-${VpcStackName}-PublicSubnet0"
+        SecurityGroupIds:
+          - !GetAtt EcsEC2InstanceSecurityGroup.GroupId
+        KeyName: !Ref EcsEC2KeyPair
+        ImageId: !Ref EcsEC2AMI
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            echo "ECS_CLUSTER=${EcsCluster}" >> /etc/ecs/ecs.config
+
+            # Install AWS CLI v2 (for SSM fetch)
+            yum install -y awscli jq
+
+            # Create certs directory
+            mkdir -p /etc/ssl/certs/tasks-management
+            chmod 700 /etc/ssl/certs/tasks-management
+
+            # Fetch RSA private key (SecureString, requires decryption)
+            aws ssm get-parameter \
+              --name "/${AppName}/rsa/private.pem" \
+              --with-decryption \
+              --region ${AWS::Region} \
+              --query "Parameter.Value" \
+              --output text > /etc/ssl/certs/tasks-management/private.pem
+
+            # Fetch RSA public key (String, no decryption needed)
+            aws ssm get-parameter \
+              --name "/${AppName}/rsa/public.pem" \
+              --region ${AWS::Region} \
+              --query "Parameter.Value" \
+              --output text > /etc/ssl/certs/tasks-management/public.pem
+
+            chmod 600 /etc/ssl/certs/tasks-management/*.pem
+
+            echo "UserData script completed — RSA keys installed."
+    
+    
+
+    EcsEC2InstanceSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Enable SSH, HTTP, HTTPS
+        VpcId:
+          Fn::ImportValue:
+            Fn::Sub: "${AWS::Region}-${VpcStackName}-VPC"
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 22
+            ToPort: 22
+            CidrIp: !Ref SSHLocation
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+
+
+    EcsEC2Role:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - ec2.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Path: /
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+        Policies:
+          - PolicyName: EcsEC2SSMParameterAccess
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ssm:GetParameter
+                    - ssm:GetParameters
+                  Resource:
+                    - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/rsa/*
+
+    EcsEC2InstanceProfile:
+      Type: AWS::IAM::InstanceProfile
+      Properties:
+        Roles:
+          - Ref: EcsEC2Role
+
+    ElasticIP:
+      Type: AWS::EC2::EIP
+
+    EIPAssociation:
+      Type: AWS::EC2::EIPAssociation
+      Properties:
+        AllocationId: !GetAtt ElasticIP.AllocationId
+        InstanceId: !Ref EcsEC2Instance
+
+
+    BackendEcrRepository:
+      Type: AWS::ECR::Repository
+      Properties:
+        RepositoryName: !Ref DockerImageName
+
+
+    ContainerCloudWatchLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        LogGroupName: !Ref ContainerCloudWatchLogGroupName
+        RetentionInDays: 14
+
+    TaskExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: ecs-tasks.amazonaws.com
+              Action: sts:AssumeRole
+        Path: /
+        Policies:
+          - PolicyName: BackendExecutionRolePolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                # ECR pulls
+                - Effect: Allow
+                  Action:
+                    - ecr:GetAuthorizationToken
+                    - ecr:BatchCheckLayerAvailability
+                    - ecr:GetDownloadUrlForLayer
+                    - ecr:BatchGetImage
+                  Resource: "*"
+
+                # Logs
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+
+                # Fetch DB, JWT, RSA from SSM
+                - Effect: Allow
+                  Action:
+                    - ssm:GetParameter
+                    - ssm:GetParameters
+                  Resource:
+                    - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/database/*
+                    - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/jwt/*
+                    - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AppName}/rsa/*
+
+    TaskRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub ${ContainerName}-task-role
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: ecs-tasks.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: MinimalAppTaskRolePolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+
+    TaskDefinition:
+      Type: AWS::ECS::TaskDefinition
+      Properties:
+        Family: !Ref TaskDefinitionFamily
+        NetworkMode: bridge
+        RequiresCompatibilities:
+          - EC2
+        ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+        TaskRoleArn: !GetAtt TaskRole.Arn
+        ContainerDefinitions:
+          - Name: !Ref ContainerName
+            Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DockerImageName}:latest
+            Cpu: 660
+            Memory: 720
+
+            Environment:
+              # Database (non-sensitive)
+              - Name: DB_HOST
+                Value: !GetAtt AppDBInstance.Endpoint.Address
+              - Name: DB_PORT
+                Value: !GetAtt AppDBInstance.Endpoint.Port
+              - Name: DB_NAME
+                Value: !Sub "{{resolve:ssm:/${AppName}/database/dbname}}"
+              - Name: DATABASE_USERNAME
+                Value: !Sub "{{resolve:ssm:/${AppName}/database/username}}"
+              - Name: DATABASE_PASSWORD
+                Value: !Sub "{{resolve:ssm:/${AppName}/database/password}}"
+
+
+              # RSA public key (safe to be env path)
+              - Name: RSA_PUBLIC_KEY_PATH
+                Value: file:/app/certs/public.pem
+              - Name: RSA_PRIVATE_KEY_PATH
+                Value: file:/app/certs/private.pem
+
+              # JWT configs (non-sensitive)
+              - Name: JWT_ACCESS_TOKEN_EXPIRATION
+                Value: !Sub "{{resolve:ssm:/${AppName}/jwt/access-expiration}}"
+              - Name: JWT_REFRESH_TOKEN_EXPIRATION
+                Value: !Sub "{{resolve:ssm:/${AppName}/jwt/refresh-expiration}}"
+
+              # Refresh token cookie config (Prod hardened)
+              - Name: REFRESH_TOKEN_LENGTH
+                Value: "64"
+              - Name: REFRESH_TOKEN_HASH_ALGORITHM
+                Value: "SHA-256"
+              - Name: REFRESH_TOKEN_COOKIE_NAME
+                Value: "refresh_token"
+              - Name: COOKIE_SECURE
+                Value: "true"
+              - Name: REFRESH_TOKEN_COOKIE_SAME_SITE
+                Value: "strict"
+              - Name: REFRESH_TOKEN_COOKIE_HTTP_ONLY
+                Value: "true"
+              - Name: REFRESH_TOKEN_COOKIE_MAX_AGE
+                Value: "604800"
+
+              # Logging
+              - Name: SECURITY_LOG_LEVEL
+                Value: "INFO"
+              - Name: SHOW_SQL
+                Value: "false"
+
+            PortMappings:
+              - ContainerPort: 8080
+                Protocol: tcp
+                HostPort: 8080
+
+            MountPoints:
+              - SourceVolume: certs
+                ContainerPath: /app/certs
+                ReadOnly: true
+
+            HealthCheck:
+              Command:
+                - CMD-SHELL
+                - "curl -f http://localhost:8080/actuator/health || exit 1"
+              Interval: 30
+              Timeout: 5
+              Retries: 3
+              StartPeriod: 60
+
+            LogConfiguration:
+              LogDriver: awslogs
+              Options:
+                awslogs-group: !Ref ContainerCloudWatchLogGroup
+                awslogs-region: !Ref AWS::Region
+            Essential: true
+
+        Volumes:
+          - Name: certs
+            Host:
+              SourcePath: /etc/ssl/certs/tasks-management
+
+    AppDBSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupDescription: Subnets available for the RDS DB Instance
+        SubnetIds:
+          - Fn::ImportValue:
+              Fn::Sub: "${AWS::Region}-${VpcStackName}-PrivateSubnet0"
+          - Fn::ImportValue:
+              Fn::Sub: "${AWS::Region}-${VpcStackName}-PrivateSubnet1"
+    AppDBInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        DBInstanceIdentifier: !Sub "${AppName}-db-instance"
+        DBName: !Sub "{{resolve:ssm:/${AppName}/database/dbname}}"
+        DBInstanceClass: !Ref DBInstanceType
+        AllocatedStorage: 20
+        Engine: postgres
+        EngineVersion: 17.5
+        MasterUsername: !Sub "{{resolve:ssm:/${AppName}/database/username}}"
+        MasterUserPassword: !Sub "{{resolve:ssm:/${AppName}/database/password}}"
+        DBSubnetGroupName: !Ref AppDBSubnetGroup
+        VPCSecurityGroups:
+          - !Ref AppDBSecurityGroup
+        Port: !Sub "{{resolve:ssm:/${AppName}/database/port:1}}"
+        Tags:
+          - Key: App
+            Value: !Ref AppName
+
+    AppDBSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        VpcId:
+          Fn::ImportValue:
+            Fn::Sub: "${AWS::Region}-${VpcStackName}-VPC"
+        GroupDescription: Security Group for RDS
+        SecurityGroupIngress:
+          - SourceSecurityGroupId: !Ref EcsEC2InstanceSecurityGroup
+            IpProtocol: tcp
+            FromPort: 5432
+            ToPort: 5432
+
+    GitHubActionsBackendRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub "GitHubActions-${AppName}-Backend-Role"
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Federated: !Sub 'arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com'
+              Action: sts:AssumeRoleWithWebIdentity
+              Condition:
+                StringEquals:
+                  token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                StringLike:
+                  token.actions.githubusercontent.com:sub: 'repo:Omar-p/tasks-management:*'
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
+        Policies:
+          # ECS permissions for backend deployment
+          - PolicyName: ECSFullAccess
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ecs:*
+                    - iam:PassRole
+                  Resource: "*"
+
+
+          # Logs access for debugging
+          - PolicyName: LogsReadAccess
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:DescribeLogGroups
+                    - logs:DescribeLogStreams
+                    - logs:GetLogEvents
+                  Resource: "*"
+
+  Outputs:
+    InstanceId:
+      Description: InstanceId of the newly created EC2 instance
+      Value: !Ref EcsEC2Instance
+
+    AZ:
+      Description: Availability Zone of the newly created EC2 instance
+      Value: !GetAtt EcsEC2Instance.AvailabilityZone
+
+    PublicDNS:
+      Description: Public DNSName of the newly created EC2 instance
+      Value: !GetAtt EcsEC2Instance.PublicDnsName
+
+    PublicIP:
+      Description: Public IP address of the newly created EC2 instance
+      Value: !GetAtt EcsEC2Instance.PublicIp
+
+    GitHubActionsBackendRoleArn:
+      Description: ARN of the GitHub Actions role for backend deployment
+      Value: !GetAtt GitHubActionsBackendRole.Arn
+      Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-GitHubActionsBackendRoleArn"

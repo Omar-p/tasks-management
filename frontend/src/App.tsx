@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts";
 import { AuthContainer } from "@/views/containers/auth";
 import { DashboardContainer } from "@/views/containers/dashboard";
 import { TasksContainer } from "@/views/containers/tasks";

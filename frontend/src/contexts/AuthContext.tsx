@@ -4,8 +4,6 @@ import { AuthContext } from "./auth.types";
 import { authApi } from "@/services/auth-api";
 import { tasksApi } from "@/services/tasks-api";
 
-export { useAuth } from "./auth.types";
-
 interface AuthProviderProps {
   children: React.ReactNode;
 }

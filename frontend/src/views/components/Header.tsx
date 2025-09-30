@@ -1,5 +1,5 @@
 import { Logo } from "@/views/atoms";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { toast } from "sonner";

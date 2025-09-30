@@ -1,6 +1,6 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts";
 
 interface TestWrapperProps {
   children: React.ReactNode;

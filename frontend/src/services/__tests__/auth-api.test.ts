@@ -10,7 +10,7 @@ global.fetch = mockFetch;
 describe("AuthAPI", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFetch.mockClear();
+    mockFetch.mockReset();
 
     // Set up token getter/setter for tests
     authApi.setTokenGetter(() => null);

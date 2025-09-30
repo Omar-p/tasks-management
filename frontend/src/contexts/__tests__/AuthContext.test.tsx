@@ -12,6 +12,7 @@ vi.mock("@/services/auth-api", () => ({
     signup: vi.fn(),
     logout: vi.fn(),
     refresh: vi.fn(),
+    getProfile: vi.fn(),
     setTokenGetter: vi.fn(),
     setTokenSetter: vi.fn(),
     setLogoutHandler: vi.fn(),
@@ -186,7 +187,16 @@ describe("AuthContext", () => {
       accessToken: "new-access-token",
     };
 
+    const mockUserProfile = {
+      uuid: "123",
+      username: "Test User",
+      email: "test@email.com",
+    };
+
     (authApi.signin as ReturnType<typeof vi.fn>).mockResolvedValue(mockTokens);
+    (authApi.getProfile as ReturnType<typeof vi.fn>).mockResolvedValue(
+      mockUserProfile,
+    );
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -200,6 +210,8 @@ describe("AuthContext", () => {
 
     expect(authApi.signin).toHaveBeenCalledWith(mockCredentials);
     expect(result.current.getAccessToken()).toBe("new-access-token");
+    expect(authApi.getProfile).toHaveBeenCalled();
+    expect(result.current.user).toEqual(mockUserProfile);
   });
 
   it("should signup successfully", async () => {

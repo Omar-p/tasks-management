@@ -111,25 +111,8 @@ export const authApi = {
 
       const result = await handleResponse(response);
 
-      // Set the access token and fetch user profile
       if (tokenSetter) {
         tokenSetter(result.accessToken);
-      }
-
-      // Fetch user profile with the new token
-      try {
-        const userProfile = await fetch(`${API_BASE_URL}/users/me`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${result.accessToken}`,
-          },
-        });
-
-        const userData = await handleResponse(userProfile);
-        localStorage.setItem("user_data", JSON.stringify(userData));
-      } catch (error) {
-        console.error("Failed to fetch user profile after signin:", error);
       }
 
       return { accessToken: result.accessToken };

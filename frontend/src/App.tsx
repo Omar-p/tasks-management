@@ -1,8 +1,8 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { AuthContainer } from '@/views/containers/auth';
-import { DashboardContainer } from '@/views/containers/dashboard';
-import { TasksContainer } from '@/views/containers/tasks';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthContainer } from "@/views/containers/auth";
+import { DashboardContainer } from "@/views/containers/dashboard";
+import { TasksContainer } from "@/views/containers/tasks";
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -24,12 +24,18 @@ function App() {
               <Route path="/dashboard" element={<DashboardContainer />} />
               <Route path="/tasks" element={<TasksContainer />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/auth/*" element={<Navigate to="/dashboard" replace />} />
+              <Route
+                path="/auth/*"
+                element={<Navigate to="/dashboard" replace />}
+              />
             </>
           ) : (
             <>
               <Route path="/auth/*" element={<AuthContainer />} />
-              <Route path="*" element={<Navigate to="/auth/signin" replace />} />
+              <Route
+                path="*"
+                element={<Navigate to="/auth/signin" replace />}
+              />
             </>
           )}
         </Routes>

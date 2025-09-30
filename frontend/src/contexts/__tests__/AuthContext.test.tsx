@@ -18,7 +18,11 @@ vi.mock("@/services/auth-api", () => ({
   AuthApiError: class extends Error {
     status?: number;
     fieldErrors?: Record<string, string>;
-    constructor(message: string, status?: number, fieldErrors?: Record<string, string>) {
+    constructor(
+      message: string,
+      status?: number,
+      fieldErrors?: Record<string, string>,
+    ) {
       super(message);
       this.name = "AuthApiError";
       if (status !== undefined) {
@@ -143,7 +147,7 @@ describe("AuthContext", () => {
     mockLocalStorage.setItem("user_data", JSON.stringify(mockUser));
 
     (authApi.refresh as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error("Refresh failed")
+      new Error("Refresh failed"),
     );
 
     const { result } = renderHook(() => useAuth(), { wrapper });

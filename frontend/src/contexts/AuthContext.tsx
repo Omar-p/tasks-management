@@ -4,8 +4,6 @@ import { AuthContext } from "./auth.types";
 import { authApi } from "@/services/auth-api";
 import { tasksApi } from "@/services/tasks-api";
 
-// Re-export useAuth hook for convenience
-// eslint-disable-next-line react-refresh/only-export-components
 export { useAuth } from "./auth.types";
 
 interface AuthProviderProps {

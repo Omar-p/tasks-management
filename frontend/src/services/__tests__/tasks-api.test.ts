@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { tasksApi, TaskStatus, TaskPriority, type CreateTaskRequest, type UpdateTaskRequest } from "../tasks-api";
+import {
+  tasksApi,
+  TaskStatus,
+  TaskPriority,
+  type CreateTaskRequest,
+  type UpdateTaskRequest,
+} from "../tasks-api";
 import { DEFAULT_API_BASE_URL } from "@/config/env";
 
 // Mock fetch
@@ -43,7 +49,7 @@ describe("TasksAPI", () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer test-token-123",
+          Authorization: "Bearer test-token-123",
         },
       });
 
@@ -85,13 +91,16 @@ describe("TasksAPI", () => {
 
       const result = await tasksApi.getUserTasks();
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/tasks/me`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer test-token-123",
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/tasks/me`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer test-token-123",
+          },
         },
-      });
+      );
 
       expect(result).toEqual(mockTasks);
     });
@@ -146,13 +155,16 @@ describe("TasksAPI", () => {
 
       const result = await tasksApi.getTaskByUuid("task-123");
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/tasks/task-123`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer test-token-123",
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/tasks/task-123`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer test-token-123",
+          },
         },
-      });
+      );
 
       expect(result).toEqual(mockTask);
     });
@@ -164,7 +176,9 @@ describe("TasksAPI", () => {
         json: () => Promise.resolve({ message: "Task not found" }),
       });
 
-      await expect(tasksApi.getTaskByUuid("non-existent")).rejects.toThrow("Task not found");
+      await expect(tasksApi.getTaskByUuid("non-existent")).rejects.toThrow(
+        "Task not found",
+      );
     });
   });
 
@@ -198,7 +212,7 @@ describe("TasksAPI", () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer test-token-123",
+          Authorization: "Bearer test-token-123",
         },
         body: JSON.stringify(taskData),
       });
@@ -220,7 +234,9 @@ describe("TasksAPI", () => {
         json: () => Promise.resolve({ message: "Title is required" }),
       });
 
-      await expect(tasksApi.createTask(invalidTaskData)).rejects.toThrow("Title is required");
+      await expect(tasksApi.createTask(invalidTaskData)).rejects.toThrow(
+        "Title is required",
+      );
     });
   });
 
@@ -251,14 +267,17 @@ describe("TasksAPI", () => {
 
       const result = await tasksApi.updateTask("task-123", updateData);
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/tasks/task-123`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer test-token-123",
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/tasks/task-123`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer test-token-123",
+          },
+          body: JSON.stringify(updateData),
         },
-        body: JSON.stringify(updateData),
-      });
+      );
 
       expect(result).toEqual(mockUpdatedTask);
     });
@@ -270,8 +289,9 @@ describe("TasksAPI", () => {
         json: () => Promise.resolve({ message: "Permission denied" }),
       });
 
-      await expect(tasksApi.updateTask("task-123", { status: TaskStatus.COMPLETED }))
-        .rejects.toThrow("Permission denied");
+      await expect(
+        tasksApi.updateTask("task-123", { status: TaskStatus.COMPLETED }),
+      ).rejects.toThrow("Permission denied");
     });
   });
 
@@ -283,13 +303,16 @@ describe("TasksAPI", () => {
 
       await tasksApi.deleteTask("task-123");
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/tasks/task-123`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer test-token-123",
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/tasks/task-123`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer test-token-123",
+          },
         },
-      });
+      );
     });
 
     it("should handle delete error", async () => {
@@ -299,7 +322,9 @@ describe("TasksAPI", () => {
         json: () => Promise.resolve({ message: "Task not found" }),
       });
 
-      await expect(tasksApi.deleteTask("non-existent")).rejects.toThrow("Task not found");
+      await expect(tasksApi.deleteTask("non-existent")).rejects.toThrow(
+        "Task not found",
+      );
     });
   });
 
@@ -318,9 +343,9 @@ describe("TasksAPI", () => {
         expect.any(String),
         expect.objectContaining({
           headers: expect.objectContaining({
-            "Authorization": "Bearer my-secret-token",
+            Authorization: "Bearer my-secret-token",
           }),
-        })
+        }),
       );
     });
 

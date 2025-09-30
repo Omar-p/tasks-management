@@ -49,14 +49,17 @@ describe("AuthAPI", () => {
 
       const result = await authApi.signin(mockCredentials);
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/auth/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/auth/signin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(mockCredentials),
         },
-        credentials: "include",
-        body: JSON.stringify(mockCredentials),
-      });
+      );
 
       expect(result).toEqual({
         accessToken: mockApiResponse.accessToken,
@@ -109,17 +112,18 @@ describe("AuthAPI", () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: () => Promise.resolve({
-          type: "about:blank",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Invalid credentials",
-          instance: "/api/auth/signin",
-        }),
+        json: () =>
+          Promise.resolve({
+            type: "about:blank",
+            title: "Unauthorized",
+            status: 401,
+            detail: "Invalid credentials",
+            instance: "/api/auth/signin",
+          }),
       });
 
       await expect(authApi.signin(mockCredentials)).rejects.toThrow(
-        "Invalid credentials"
+        "Invalid credentials",
       );
     });
   });
@@ -140,13 +144,16 @@ describe("AuthAPI", () => {
 
       await authApi.signup(mockRegistrationData);
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/auth/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/auth/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(mockRegistrationData),
         },
-        body: JSON.stringify(mockRegistrationData),
-      });
+      );
     });
 
     it("should handle signup with validation errors", async () => {
@@ -166,7 +173,8 @@ describe("AuthAPI", () => {
         errors: {
           username: "Username must be at least 3 characters",
           email: "Invalid email format",
-          password: "Password must contain uppercase, lowercase, number and special character",
+          password:
+            "Password must contain uppercase, lowercase, number and special character",
         },
       };
 
@@ -203,10 +211,13 @@ describe("AuthAPI", () => {
 
       const result = await authApi.refresh();
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/auth/refresh`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
 
       expect(mockTokenSetter).toHaveBeenCalledWith("new-access-token-123");
       expect(result).toEqual({
@@ -218,13 +229,14 @@ describe("AuthAPI", () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: () => Promise.resolve({
-          type: "about:blank",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Invalid refresh token",
-          instance: "/api/auth/refresh",
-        }),
+        json: () =>
+          Promise.resolve({
+            type: "about:blank",
+            title: "Unauthorized",
+            status: 401,
+            detail: "Invalid refresh token",
+            instance: "/api/auth/refresh",
+          }),
       });
 
       await expect(authApi.refresh()).rejects.toThrow("Invalid refresh token");
@@ -243,10 +255,13 @@ describe("AuthAPI", () => {
 
       await authApi.logout();
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/auth/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
 
       expect(mockLogoutHandler).toHaveBeenCalled();
     });
@@ -258,13 +273,14 @@ describe("AuthAPI", () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: () => Promise.resolve({
-          type: "about:blank",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Unauthorized",
-          instance: "/api/auth/logout"
-        }),
+        json: () =>
+          Promise.resolve({
+            type: "about:blank",
+            title: "Unauthorized",
+            status: 401,
+            detail: "Unauthorized",
+            instance: "/api/auth/logout",
+          }),
       });
 
       // Logout should not throw even if API fails
@@ -292,13 +308,16 @@ describe("AuthAPI", () => {
 
       const result = await authApi.getProfile();
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/users/me`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${mockToken}`,
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/users/me`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${mockToken}`,
+          },
         },
-      });
+      );
 
       expect(result).toEqual(mockUserProfile);
     });

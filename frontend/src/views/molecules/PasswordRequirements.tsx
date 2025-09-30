@@ -4,7 +4,9 @@ interface PasswordRequirementsProps {
   password: string;
 }
 
-export const PasswordRequirements = ({ password }: PasswordRequirementsProps) => {
+export const PasswordRequirements = ({
+  password,
+}: PasswordRequirementsProps) => {
   const passwordSchema = signupSchema.shape.password;
   const result = passwordSchema.safeParse(password);
 
@@ -38,7 +40,7 @@ export const PasswordRequirements = ({ password }: PasswordRequirementsProps) =>
 
   return (
     <div className="text-sm bg-surface rounded-lg p-4 border mt-3">
-      <p className="font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+      <p className="font-semibold mb-2" style={{ color: "var(--color-text)" }}>
         Password requirements:
       </p>
       <ul className="text-xs space-y-2">
@@ -47,14 +49,16 @@ export const PasswordRequirements = ({ password }: PasswordRequirementsProps) =>
             key={index}
             className={`flex items-center gap-2 transition-colors duration-200`}
             style={{
-              color: req.met ? 'var(--color-success)' : 'var(--color-text-secondary)'
+              color: req.met
+                ? "var(--color-success)"
+                : "var(--color-text-secondary)",
             }}
           >
             <span
               className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold transition-colors duration-200`}
               style={{
-                backgroundColor: req.met ? 'var(--color-success)' : '#6b7280',
-                color: req.met ? 'white' : '#9ca3af'
+                backgroundColor: req.met ? "var(--color-success)" : "#6b7280",
+                color: req.met ? "white" : "#9ca3af",
               }}
             >
               {req.met ? "✓" : "○"}

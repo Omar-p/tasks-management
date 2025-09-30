@@ -23,7 +23,10 @@ interface TaskDetailModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const priorityConfig: Record<TaskPriority, { variant: "default" | "warning" | "destructive"; label: string }> = {
+const priorityConfig: Record<
+  TaskPriority,
+  { variant: "default" | "warning" | "destructive"; label: string }
+> = {
   [TaskPriority.LOW]: { variant: "default", label: "Low" },
   [TaskPriority.MEDIUM]: { variant: "default", label: "Medium" },
   [TaskPriority.HIGH]: { variant: "warning", label: "High" },
@@ -37,7 +40,11 @@ const statusConfig = {
   CANCELLED: { label: "Cancelled", color: "text-gray-500" },
 };
 
-export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModalProps) {
+export function TaskDetailModal({
+  taskUuid,
+  open,
+  onOpenChange,
+}: TaskDetailModalProps) {
   const { data: task, isLoading } = useTask(taskUuid || "");
   const { updateTask } = useTaskMutations();
 
@@ -79,7 +86,8 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
       toast.success("Task updated successfully!");
       setIsEditing(false);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update task.";
+      const message =
+        error instanceof Error ? error.message : "Failed to update task.";
       toast.error(message);
     }
   };
@@ -120,30 +128,48 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                 <>
                   {/* Title */}
                   <div>
-                    <label className="text-sm font-medium text-foreground">Title</label>
+                    <label className="text-sm font-medium text-foreground">
+                      Title
+                    </label>
                     <Input
                       value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
                       className="mt-1"
                     />
                   </div>
 
                   {/* Description */}
                   <div>
-                    <label className="text-sm font-medium text-foreground">Description</label>
+                    <label className="text-sm font-medium text-foreground">
+                      Description
+                    </label>
                     <Textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                       className="mt-1 min-h-[100px]"
                     />
                   </div>
 
                   {/* Status */}
                   <div>
-                    <label className="text-sm font-medium text-foreground">Status</label>
+                    <label className="text-sm font-medium text-foreground">
+                      Status
+                    </label>
                     <Select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as TaskStatus })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          status: e.target.value as TaskStatus,
+                        })
+                      }
                       className="mt-1"
                     >
                       {Object.entries(statusConfig).map(([key, config]) => (
@@ -156,10 +182,17 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
 
                   {/* Priority */}
                   <div>
-                    <label className="text-sm font-medium text-foreground">Priority</label>
+                    <label className="text-sm font-medium text-foreground">
+                      Priority
+                    </label>
                     <Select
                       value={formData.priority}
-                      onChange={(e) => setFormData({ ...formData, priority: e.target.value as TaskPriority })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          priority: e.target.value as TaskPriority,
+                        })
+                      }
                       className="mt-1"
                     >
                       {Object.entries(priorityConfig).map(([key, config]) => (
@@ -172,10 +205,14 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
 
                   {/* Due Date */}
                   <div>
-                    <label className="text-sm font-medium text-foreground">Due Date</label>
+                    <label className="text-sm font-medium text-foreground">
+                      Due Date
+                    </label>
                     <DatePicker
                       value={formData.dueDate}
-                      onChange={(date) => date && setFormData({ ...formData, dueDate: date })}
+                      onChange={(date) =>
+                        date && setFormData({ ...formData, dueDate: date })
+                      }
                     />
                   </div>
 
@@ -191,7 +228,9 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                             description: task.description || "",
                             status: task.status,
                             priority: task.priority,
-                            dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
+                            dueDate: task.dueDate
+                              ? new Date(task.dueDate)
+                              : new Date(),
                           });
                         }
                       }}
@@ -212,8 +251,15 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                 <>
                   {/* Status */}
                   <div>
-                    <label className="text-sm font-medium text-muted">Status</label>
-                    <p className={cn("text-lg font-semibold mt-1", statusConfig[task.status].color)}>
+                    <label className="text-sm font-medium text-muted">
+                      Status
+                    </label>
+                    <p
+                      className={cn(
+                        "text-lg font-semibold mt-1",
+                        statusConfig[task.status].color,
+                      )}
+                    >
                       {statusConfig[task.status].label}
                     </p>
                   </div>
@@ -221,15 +267,21 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                   {/* Description */}
                   {task.description && (
                     <div>
-                      <label className="text-sm font-medium text-muted">Description</label>
-                      <p className="mt-1 text-sm whitespace-pre-wrap">{task.description}</p>
+                      <label className="text-sm font-medium text-muted">
+                        Description
+                      </label>
+                      <p className="mt-1 text-sm whitespace-pre-wrap">
+                        {task.description}
+                      </p>
                     </div>
                   )}
 
                   {/* Due Date */}
                   {task.dueDate && (
                     <div>
-                      <label className="text-sm font-medium text-muted">Due Date</label>
+                      <label className="text-sm font-medium text-muted">
+                        Due Date
+                      </label>
                       <div className="flex items-center gap-2 mt-1">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -242,10 +294,18 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           className={cn(
-                            new Date(task.dueDate) < new Date() && "text-red-500"
+                            new Date(task.dueDate) < new Date() &&
+                              "text-red-500",
                           )}
                         >
-                          <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                          <rect
+                            width="18"
+                            height="18"
+                            x="3"
+                            y="4"
+                            rx="2"
+                            ry="2"
+                          />
                           <line x1="16" x2="16" y1="2" y2="6" />
                           <line x1="8" x2="8" y1="2" y2="6" />
                           <line x1="3" x2="21" y1="10" y2="10" />
@@ -253,7 +313,8 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                         <span
                           className={cn(
                             "text-sm",
-                            new Date(task.dueDate) < new Date() && "text-red-500 font-semibold"
+                            new Date(task.dueDate) < new Date() &&
+                              "text-red-500 font-semibold",
                           )}
                         >
                           {format(new Date(task.dueDate), "PPP p")}
@@ -266,7 +327,9 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                   {/* Assigned To */}
                   {task.assignedTo && (
                     <div>
-                      <label className="text-sm font-medium text-muted">Assigned To</label>
+                      <label className="text-sm font-medium text-muted">
+                        Assigned To
+                      </label>
                       <div className="flex items-center gap-2 mt-1">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -282,7 +345,9 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                           <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                           <circle cx="12" cy="7" r="4" />
                         </svg>
-                        <span className="text-sm">{task.assignedTo.username}</span>
+                        <span className="text-sm">
+                          {task.assignedTo.username}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -290,7 +355,9 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                   {/* Created By */}
                   {task.createdBy && (
                     <div>
-                      <label className="text-sm font-medium text-muted">Created By</label>
+                      <label className="text-sm font-medium text-muted">
+                        Created By
+                      </label>
                       <div className="flex items-center gap-2 mt-1">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -306,7 +373,9 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                           <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                           <circle cx="12" cy="7" r="4" />
                         </svg>
-                        <span className="text-sm">{task.createdBy.username}</span>
+                        <span className="text-sm">
+                          {task.createdBy.username}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -315,7 +384,9 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                     {task.createdAt && (
                       <div>
-                        <label className="text-xs font-medium text-muted">Created</label>
+                        <label className="text-xs font-medium text-muted">
+                          Created
+                        </label>
                         <p className="text-xs mt-1">
                           {format(new Date(task.createdAt), "PPP p")}
                         </p>
@@ -323,7 +394,9 @@ export function TaskDetailModal({ taskUuid, open, onOpenChange }: TaskDetailModa
                     )}
                     {task.updatedAt && (
                       <div>
-                        <label className="text-xs font-medium text-muted">Last Updated</label>
+                        <label className="text-xs font-medium text-muted">
+                          Last Updated
+                        </label>
                         <p className="text-xs mt-1">
                           {format(new Date(task.updatedAt), "PPP p")}
                         </p>

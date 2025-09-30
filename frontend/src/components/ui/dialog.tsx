@@ -43,7 +43,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         ref={ref}
         className={cn(
           "relative z-50 w-full max-w-lg rounded-lg bg-surface p-6 shadow-lg border",
-          className
+          className,
         )}
         onClick={(e) => e.stopPropagation()}
         {...props}
@@ -51,7 +51,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         {children}
       </div>
     );
-  }
+  },
 );
 DialogContent.displayName = "DialogContent";
 
@@ -59,10 +59,7 @@ const DialogHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("flex flex-col space-y-1.5 mb-4", className)}
-    {...props}
-  />
+  <div className={cn("flex flex-col space-y-1.5 mb-4", className)} {...props} />
 );
 
 const DialogTitle = React.forwardRef<
@@ -73,7 +70,7 @@ const DialogTitle = React.forwardRef<
     ref={ref}
     className={cn(
       "text-lg font-semibold leading-none tracking-tight",
-      className
+      className,
     )}
     {...props}
   />

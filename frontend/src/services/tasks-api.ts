@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from '@/config/env';
+import { getApiBaseUrl } from "@/config/env";
 
 export interface Task {
   uuid: string;
@@ -20,17 +20,17 @@ export interface Task {
 }
 
 export enum TaskStatus {
-  PENDING = 'PENDING',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
+  PENDING = "PENDING",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
 }
 
 export enum TaskPriority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  URGENT = 'URGENT',
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+  URGENT = "URGENT",
 }
 
 export interface CreateTaskRequest {
@@ -52,9 +52,12 @@ export interface UpdateTaskRequest {
 const API_BASE_URL = getApiBaseUrl();
 
 class TasksApiError extends Error {
-  constructor(message: string, public status?: number) {
+  constructor(
+    message: string,
+    public status?: number,
+  ) {
     super(message);
-    this.name = 'TasksApiError';
+    this.name = "TasksApiError";
   }
 }
 
@@ -63,8 +66,13 @@ let tokenGetter: (() => string | null) | null = null;
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new TasksApiError(errorData.message || 'Request failed', response.status);
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: "Unknown error" }));
+    throw new TasksApiError(
+      errorData.message || "Request failed",
+      response.status,
+    );
   }
   return response.json();
 };
@@ -72,7 +80,7 @@ const handleResponse = async (response: Response) => {
 const getAuthHeaders = () => {
   const token = tokenGetter?.();
   return {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
   };
 };
@@ -85,14 +93,16 @@ export const tasksApi = {
   async getAllTasks(): Promise<Task[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks`, {
-        method: 'GET',
+        method: "GET",
         headers: getAuthHeaders(),
       });
 
       return handleResponse(response);
     } catch (error) {
       if (error instanceof TypeError) {
-        throw new TasksApiError('Unable to connect to the server. Please check your internet connection and try again.');
+        throw new TasksApiError(
+          "Unable to connect to the server. Please check your internet connection and try again.",
+        );
       }
       throw error;
     }
@@ -102,11 +112,11 @@ export const tasksApi = {
     try {
       const url = new URL(`${API_BASE_URL}/tasks/me`);
       if (status) {
-        url.searchParams.append('status', status);
+        url.searchParams.append("status", status);
       }
 
       const response = await fetch(url.toString(), {
-        method: 'GET',
+        method: "GET",
         headers: getAuthHeaders(),
       });
 
@@ -115,7 +125,9 @@ export const tasksApi = {
       return data.content || data;
     } catch (error) {
       if (error instanceof TypeError) {
-        throw new TasksApiError('Unable to connect to the server. Please check your internet connection and try again.');
+        throw new TasksApiError(
+          "Unable to connect to the server. Please check your internet connection and try again.",
+        );
       }
       throw error;
     }
@@ -124,14 +136,16 @@ export const tasksApi = {
   async getTaskByUuid(uuid: string): Promise<Task> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks/${uuid}`, {
-        method: 'GET',
+        method: "GET",
         headers: getAuthHeaders(),
       });
 
       return handleResponse(response);
     } catch (error) {
       if (error instanceof TypeError) {
-        throw new TasksApiError('Unable to connect to the server. Please check your internet connection and try again.');
+        throw new TasksApiError(
+          "Unable to connect to the server. Please check your internet connection and try again.",
+        );
       }
       throw error;
     }
@@ -140,7 +154,7 @@ export const tasksApi = {
   async createTask(taskData: CreateTaskRequest): Promise<Task> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks`, {
-        method: 'POST',
+        method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify(taskData),
       });
@@ -148,7 +162,9 @@ export const tasksApi = {
       return handleResponse(response);
     } catch (error) {
       if (error instanceof TypeError) {
-        throw new TasksApiError('Unable to connect to the server. Please check your internet connection and try again.');
+        throw new TasksApiError(
+          "Unable to connect to the server. Please check your internet connection and try again.",
+        );
       }
       throw error;
     }
@@ -157,7 +173,7 @@ export const tasksApi = {
   async updateTask(uuid: string, taskData: UpdateTaskRequest): Promise<Task> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks/${uuid}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: getAuthHeaders(),
         body: JSON.stringify(taskData),
       });
@@ -165,7 +181,9 @@ export const tasksApi = {
       return handleResponse(response);
     } catch (error) {
       if (error instanceof TypeError) {
-        throw new TasksApiError('Unable to connect to the server. Please check your internet connection and try again.');
+        throw new TasksApiError(
+          "Unable to connect to the server. Please check your internet connection and try again.",
+        );
       }
       throw error;
     }
@@ -174,17 +192,24 @@ export const tasksApi = {
   async deleteTask(uuid: string): Promise<void> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks/${uuid}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        throw new TasksApiError(errorData.message || 'Request failed', response.status);
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Unknown error" }));
+        throw new TasksApiError(
+          errorData.message || "Request failed",
+          response.status,
+        );
       }
     } catch (error) {
       if (error instanceof TypeError) {
-        throw new TasksApiError('Unable to connect to the server. Please check your internet connection and try again.');
+        throw new TasksApiError(
+          "Unable to connect to the server. Please check your internet connection and try again.",
+        );
       }
       throw error;
     }

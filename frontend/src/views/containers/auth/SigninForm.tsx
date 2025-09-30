@@ -1,14 +1,20 @@
-import { Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuthMutations } from '@/hooks';
-import { AuthApiError } from '@/services/auth-api';
-import { signinSchema, type SigninFormData } from '@/lib/validation';
+import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useAuthMutations } from "@/hooks";
+import { AuthApiError } from "@/services/auth-api";
+import { signinSchema, type SigninFormData } from "@/lib/validation";
 
 export const SigninForm = () => {
   const { login } = useAuthMutations();
@@ -31,14 +37,14 @@ export const SigninForm = () => {
         Object.entries(error.fieldErrors).forEach(([field, message]) => {
           if (field in data) {
             setError(field as keyof SigninFormData, {
-              type: 'server',
-              message: message
+              type: "server",
+              message: message,
             });
           }
         });
 
         // Show general error toast
-        toast.error('Please fix the validation errors below');
+        toast.error("Please fix the validation errors below");
       }
     }
   };
@@ -59,9 +65,9 @@ export const SigninForm = () => {
               id="email"
               type="email"
               placeholder="john@example.com"
-              {...register('email')}
+              {...register("email")}
               disabled={login.isPending}
-              className={errors.email ? 'border-destructive' : ''}
+              className={errors.email ? "border-destructive" : ""}
             />
             {errors.email && (
               <p className="text-sm text-destructive flex items-center gap-1">
@@ -77,9 +83,9 @@ export const SigninForm = () => {
               id="password"
               type="password"
               placeholder="Enter your password"
-              {...register('password')}
+              {...register("password")}
               disabled={login.isPending}
-              className={errors.password ? 'border-destructive' : ''}
+              className={errors.password ? "border-destructive" : ""}
             />
             {errors.password && (
               <p className="text-sm text-destructive flex items-center gap-1">
@@ -90,7 +96,7 @@ export const SigninForm = () => {
           </div>
 
           <Button type="submit" className="w-full" disabled={login.isPending}>
-            {login.isPending ? 'Signing in...' : 'Sign in'}
+            {login.isPending ? "Signing in..." : "Sign in"}
           </Button>
         </form>
 

@@ -10,7 +10,10 @@ interface TaskCardProps {
   onClick?: () => void;
 }
 
-const priorityConfig: Record<TaskPriority, { variant: "default" | "warning" | "destructive"; label: string }> = {
+const priorityConfig: Record<
+  TaskPriority,
+  { variant: "default" | "warning" | "destructive"; label: string }
+> = {
   [TaskPriority.LOW]: { variant: "default", label: "Low" },
   [TaskPriority.MEDIUM]: { variant: "default", label: "Medium" },
   [TaskPriority.HIGH]: { variant: "warning", label: "High" },
@@ -44,7 +47,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       onClick={onClick}
       className={cn(
         "bg-surface rounded-lg p-4 shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow",
-        isDragging && "opacity-50"
+        isDragging && "opacity-50",
       )}
     >
       <div className="flex items-start justify-between mb-2">
@@ -55,12 +58,19 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       </div>
 
       {task.description && (
-        <p className="text-xs text-muted mb-3 line-clamp-2">{task.description}</p>
+        <p className="text-xs text-muted mb-3 line-clamp-2">
+          {task.description}
+        </p>
       )}
 
       <div className="flex items-center justify-between text-xs">
         {task.dueDate && (
-          <div className={cn("flex items-center gap-1", isOverdue && "text-red-500")}>
+          <div
+            className={cn(
+              "flex items-center gap-1",
+              isOverdue && "text-red-500",
+            )}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="14"

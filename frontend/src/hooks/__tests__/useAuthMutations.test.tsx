@@ -135,7 +135,7 @@ describe("useAuthMutations - Integration Tests", () => {
       });
 
       expect(toast.success).toHaveBeenCalledWith(
-        "Account created successfully! Please sign in."
+        "Account created successfully! Please sign in.",
       );
       expect(mockNavigate).toHaveBeenCalledWith("/auth/signin");
     });
@@ -182,7 +182,7 @@ describe("useAuthMutations - Integration Tests", () => {
       // Setup: user is logged in
       localStorage.setItem(
         "user_data",
-        JSON.stringify({ uuid: "user-123", username: "testuser" })
+        JSON.stringify({ uuid: "user-123", username: "testuser" }),
       );
 
       // Mock successful logout

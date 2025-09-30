@@ -123,16 +123,15 @@ export function CreateTaskModal({
               Due Date & Time <span className="text-red-500">*</span>
             </Label>
             <DatePicker
-                value={dueDate}
-                onChange={(date) =>
-                    setValue("dueDate", date as Date, { shouldValidate: true })
-                }
+              value={dueDate}
+              onChange={(date) =>
+                setValue("dueDate", date as Date, { shouldValidate: true })
+              }
             />
             {errors.dueDate && (
-                <p className="text-sm text-red-500">{errors.dueDate.message}</p>
+              <p className="text-sm text-red-500">{errors.dueDate.message}</p>
             )}
           </div>
-
 
           <div className="flex gap-3 justify-end pt-4">
             <Button

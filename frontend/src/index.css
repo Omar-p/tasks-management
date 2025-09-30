@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import './styles/datepicker.css';
+@import "tailwindcss";
+@import "./styles/datepicker.css";
 
 :root {
   /* Light theme colors */
@@ -22,17 +22,17 @@
 
 .dark {
   /* Improved dark theme colors */
-  --color-primary: #001081;       /* Keep blue strong for brand identity */
-  --color-secondary: #1eed93;     /* Accent green for highlights */
-  --color-background: #111318;    /* Softer dark gray (not pure black) */
-  --color-surface: #1c1f26;       /* Cards/forms */
-  --color-surface-alt: #2a2f3a;   /* Hover / elevated surfaces */
-  --color-text: #f5f6f7;          /* Near-white for better readability */
+  --color-primary: #001081; /* Keep blue strong for brand identity */
+  --color-secondary: #1eed93; /* Accent green for highlights */
+  --color-background: #111318; /* Softer dark gray (not pure black) */
+  --color-surface: #1c1f26; /* Cards/forms */
+  --color-surface-alt: #2a2f3a; /* Hover / elevated surfaces */
+  --color-text: #f5f6f7; /* Near-white for better readability */
   --color-text-secondary: #b0b6c1; /* Softer gray for secondary text */
   --color-foreground: #f5f6f7;
-  --color-border: #2f3542;        /* Subtle borders/dividers */
-  --color-destructive: #ff4d4f;   /* Error red (for validation messages) */
-  --color-success: #1eed93;       /* Use green accent for success */
+  --color-border: #2f3542; /* Subtle borders/dividers */
+  --color-destructive: #ff4d4f; /* Error red (for validation messages) */
+  --color-success: #1eed93; /* Use green accent for success */
   --color-muted: #9ca3af;
   --color-muted-foreground: #d1d5db;
 }
@@ -166,7 +166,11 @@ body {
 }
 
 .hover\:bg-destructive\/10:hover {
-  background-color: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+  background-color: color-mix(
+    in srgb,
+    var(--color-destructive) 10%,
+    transparent
+  );
 }
 
 .hover\:border-destructive\/30:hover {

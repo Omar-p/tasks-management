@@ -1,2 +1,2 @@
-export { TestWrapper } from './test-wrapper';
-export { createQueryWrapper } from './query-wrapper';
+export { TestWrapper } from "./test-wrapper";
+export { createQueryWrapper } from "./query-wrapper";

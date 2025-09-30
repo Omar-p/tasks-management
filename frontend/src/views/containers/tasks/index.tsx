@@ -1,6 +1,6 @@
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/views/components';
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/views/components";
 
 export const TasksContainer = () => {
   const { user, logout } = useAuth();
@@ -9,11 +9,20 @@ export const TasksContainer = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-surface overflow-hidden">
         <div className="w-full px-4 py-4 flex justify-between items-center gap-2">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary truncate min-w-0">Tasks Management</h1>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary truncate min-w-0">
+            Tasks Management
+          </h1>
           <div className="flex items-center gap-2 flex-shrink-0">
             <ThemeToggle />
-            <span className="text-textSecondary hidden lg:inline text-sm truncate">Welcome, {user?.username}</span>
-            <Button onClick={logout} variant="outline" size="sm" className="whitespace-nowrap">
+            <span className="text-textSecondary hidden lg:inline text-sm truncate">
+              Welcome, {user?.username}
+            </span>
+            <Button
+              onClick={logout}
+              variant="outline"
+              size="sm"
+              className="whitespace-nowrap"
+            >
               Logout
             </Button>
           </div>

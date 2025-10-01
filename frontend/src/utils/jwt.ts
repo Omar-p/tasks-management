@@ -3,7 +3,7 @@ import { decodeJwt } from "jose";
 interface JWTPayload {
   sub: string;
   email: string;
-  name: string;
+  name?: string;
   iat: number;
   exp?: number;
 }

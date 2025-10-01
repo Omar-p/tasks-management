@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/contexts";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,13 +64,21 @@ export const DashboardContainer = () => {
     setSelectedTaskUuid(task.uuid);
   };
 
-  const totalTasks = tasks.length;
-  const inProgressTasks = tasks.filter(
-    (task) => task.status === TaskStatus.IN_PROGRESS,
-  ).length;
-  const completedTasks = tasks.filter(
-    (task) => task.status === TaskStatus.COMPLETED,
-  ).length;
+  const { totalTasks, inProgressTasks, completedTasks } = useMemo(() => {
+    const total = tasks.length;
+    const inProgress = tasks.filter(
+      (task) => task.status === TaskStatus.IN_PROGRESS,
+    ).length;
+    const completed = tasks.filter(
+      (task) => task.status === TaskStatus.COMPLETED,
+    ).length;
+
+    return {
+      totalTasks: total,
+      inProgressTasks: inProgress,
+      completedTasks: completed,
+    };
+  }, [tasks]);
 
   return (
     <div className="min-h-screen bg-background">

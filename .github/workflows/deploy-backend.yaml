@@ -36,7 +36,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Build, Test, and Package REST Docs
+      - name: Build and Test & Generate REST Docs
         run: ./mvnw -Dnet.bytebuddy.experimental=true clean verify
 
       - name: Upload coverage report

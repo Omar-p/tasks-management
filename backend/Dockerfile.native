@@ -11,7 +11,8 @@ RUN ./mvnw dependency:go-offline -B
 
 COPY src src
 
-RUN ./mvnw clean -Dnet.bytebuddy.experimental=true -Pnative native:compile -DskipTests
+RUN ./mvnw clean -Dnet.bytebuddy.experimental=true -Dasciidoctor.skip=true -Dmaven.antrun.skip=true \
+    -Pnative native:compile -DskipTests
 
 FROM alpine:3.19
 

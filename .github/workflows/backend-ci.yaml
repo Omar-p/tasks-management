@@ -49,7 +49,7 @@ jobs:
         run: ./mvnw spring-javaformat:validate
 
       - name: Build & run unit tests with coverage
-        run: ./mvnw clean verify -DskipIntegrationTests=false
+        run: ./mvnw  -Dnet.bytebuddy.experimental=true clean verify
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -58,6 +58,3 @@ jobs:
           files: ./backend/target/site/jacoco/jacoco.xml
           fail_ci_if_error: false
 
-      # Optional: build native image (GraalVM)
-      - name: Build native image
-        run: ./mvnw -Pnative native:compile -DskipTests

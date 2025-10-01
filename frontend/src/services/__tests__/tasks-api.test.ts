@@ -7,17 +7,17 @@ import {
   type UpdateTaskRequest,
 } from "../tasks-api";
 import { DEFAULT_API_BASE_URL } from "@/config/env";
+import { createEmptyResponse, createJsonResponse } from "@/test/fetch-helpers";
 
-// Mock fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).fetch = mockFetch;
 
 describe("TasksAPI", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFetch.mockClear();
+    mockFetch.mockReset();
 
-    // Set up token getter for tests
     tasksApi.setTokenGetter(() => "test-token-123");
   });
 
@@ -31,17 +31,10 @@ describe("TasksAPI", () => {
           status: TaskStatus.PENDING,
           priority: TaskPriority.HIGH,
           dueDate: "2025-12-31T12:00:00Z",
-          createdAt: "2025-01-01T10:00:00Z",
-          updatedAt: "2025-01-01T10:00:00Z",
-          createdBy: { uuid: "user-1", username: "creator" },
-          assignedTo: { uuid: "user-2", username: "assignee" },
         },
       ];
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockTasks),
-      });
+      mockFetch.mockResolvedValueOnce(createJsonResponse(mockTasks));
 
       const result = await tasksApi.getAllTasks();
 
@@ -57,11 +50,9 @@ describe("TasksAPI", () => {
     });
 
     it("should handle fetch error", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: () => Promise.resolve({ message: "Server error" }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ message: "Server error" }, { status: 500 }),
+      );
 
       await expect(tasksApi.getAllTasks()).rejects.toThrow("Server error");
     });
@@ -77,17 +68,12 @@ describe("TasksAPI", () => {
           status: TaskStatus.IN_PROGRESS,
           priority: TaskPriority.MEDIUM,
           dueDate: "2025-12-31T12:00:00Z",
-          createdAt: "2025-01-01T10:00:00Z",
-          updatedAt: "2025-01-01T10:00:00Z",
-          createdBy: { uuid: "user-1", username: "me" },
-          assignedTo: { uuid: "user-1", username: "me" },
         },
       ];
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockTasks),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ content: mockTasks }),
+      );
 
       const result = await tasksApi.getUserTasks();
 
@@ -114,21 +100,17 @@ describe("TasksAPI", () => {
           status: TaskStatus.COMPLETED,
           priority: TaskPriority.LOW,
           dueDate: "2025-12-31T12:00:00Z",
-          createdAt: "2025-01-01T10:00:00Z",
-          updatedAt: "2025-01-01T10:00:00Z",
-          createdBy: { uuid: "user-1", username: "me" },
-          assignedTo: { uuid: "user-1", username: "me" },
         },
       ];
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockTasks),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ content: mockTasks }),
+      );
 
       const result = await tasksApi.getUserTasks(TaskStatus.COMPLETED);
 
-      expect(mockFetch.mock.calls[0][0]).toContain("status=COMPLETED");
+      const [url] = mockFetch.mock.calls[0];
+      expect(url).toContain("status=COMPLETED");
       expect(result).toEqual(mockTasks);
     });
   });
@@ -142,16 +124,9 @@ describe("TasksAPI", () => {
         status: TaskStatus.PENDING,
         priority: TaskPriority.URGENT,
         dueDate: "2025-12-31T12:00:00Z",
-        createdAt: "2025-01-01T10:00:00Z",
-        updatedAt: "2025-01-01T10:00:00Z",
-        createdBy: { uuid: "user-1", username: "creator" },
-        assignedTo: { uuid: "user-2", username: "assignee" },
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockTask),
-      });
+      mockFetch.mockResolvedValueOnce(createJsonResponse(mockTask));
 
       const result = await tasksApi.getTaskByUuid("task-123");
 
@@ -170,11 +145,9 @@ describe("TasksAPI", () => {
     });
 
     it("should handle not found error", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: () => Promise.resolve({ message: "Task not found" }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ message: "Task not found" }, { status: 404 }),
+      );
 
       await expect(tasksApi.getTaskByUuid("non-existent")).rejects.toThrow(
         "Task not found",
@@ -195,77 +168,61 @@ describe("TasksAPI", () => {
         uuid: "new-task-123",
         ...taskData,
         status: TaskStatus.PENDING,
-        createdAt: "2025-01-01T10:00:00Z",
-        updatedAt: "2025-01-01T10:00:00Z",
-        createdBy: { uuid: "user-1", username: "me" },
-        assignedTo: { uuid: "user-1", username: "me" },
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockCreatedTask),
-      });
+      mockFetch.mockResolvedValueOnce(createJsonResponse(mockCreatedTask));
 
       const result = await tasksApi.createTask(taskData);
 
-      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/tasks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer test-token-123",
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${DEFAULT_API_BASE_URL}/tasks`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer test-token-123",
+          },
+          body: JSON.stringify(taskData),
         },
-        body: JSON.stringify(taskData),
-      });
+      );
 
       expect(result).toEqual(mockCreatedTask);
     });
 
     it("should handle validation errors", async () => {
-      const invalidTaskData: CreateTaskRequest = {
+      const taskData: CreateTaskRequest = {
         title: "",
         description: "",
         priority: TaskPriority.LOW,
-        dueDate: "",
+        dueDate: "2025-12-31T12:00:00Z",
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: () => Promise.resolve({ message: "Title is required" }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ message: "Validation failed" }, { status: 400 }),
+      );
 
-      await expect(tasksApi.createTask(invalidTaskData)).rejects.toThrow(
-        "Title is required",
+      await expect(tasksApi.createTask(taskData)).rejects.toThrow(
+        "Validation failed",
       );
     });
   });
 
   describe("updateTask", () => {
     it("should update task successfully", async () => {
-      const updateData: UpdateTaskRequest = {
-        title: "Updated Title",
-        status: TaskStatus.IN_PROGRESS,
+      const taskData: UpdateTaskRequest = {
+        title: "Updated Task",
+        status: TaskStatus.COMPLETED,
       };
 
       const mockUpdatedTask = {
         uuid: "task-123",
-        title: "Updated Title",
-        description: "Original description",
-        status: TaskStatus.IN_PROGRESS,
-        priority: TaskPriority.MEDIUM,
-        dueDate: "2025-12-31T12:00:00Z",
-        createdAt: "2025-01-01T10:00:00Z",
-        updatedAt: "2025-01-02T10:00:00Z",
-        createdBy: { uuid: "user-1", username: "me" },
-        assignedTo: { uuid: "user-1", username: "me" },
+        title: "Updated Task",
+        status: TaskStatus.COMPLETED,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockUpdatedTask),
-      });
+      mockFetch.mockResolvedValueOnce(createJsonResponse(mockUpdatedTask));
 
-      const result = await tasksApi.updateTask("task-123", updateData);
+      const result = await tasksApi.updateTask("task-123", taskData);
 
       expect(mockFetch).toHaveBeenCalledWith(
         `${DEFAULT_API_BASE_URL}/tasks/task-123`,
@@ -275,7 +232,7 @@ describe("TasksAPI", () => {
             "Content-Type": "application/json",
             Authorization: "Bearer test-token-123",
           },
-          body: JSON.stringify(updateData),
+          body: JSON.stringify(taskData),
         },
       );
 
@@ -283,23 +240,23 @@ describe("TasksAPI", () => {
     });
 
     it("should handle update error", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        json: () => Promise.resolve({ message: "Permission denied" }),
-      });
+      const taskData: UpdateTaskRequest = {
+        status: TaskStatus.CANCELLED,
+      };
 
-      await expect(
-        tasksApi.updateTask("task-123", { status: TaskStatus.COMPLETED }),
-      ).rejects.toThrow("Permission denied");
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ message: "Update failed" }, { status: 400 }),
+      );
+
+      await expect(tasksApi.updateTask("task-123", taskData)).rejects.toThrow(
+        "Update failed",
+      );
     });
   });
 
   describe("deleteTask", () => {
     it("should delete task successfully", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-      });
+      mockFetch.mockResolvedValueOnce(createEmptyResponse({ status: 204 }));
 
       await tasksApi.deleteTask("task-123");
 
@@ -316,51 +273,35 @@ describe("TasksAPI", () => {
     });
 
     it("should handle delete error", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: () => Promise.resolve({ message: "Task not found" }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ message: "Delete failed" }, { status: 404 }),
+      );
 
-      await expect(tasksApi.deleteTask("non-existent")).rejects.toThrow(
-        "Task not found",
+      await expect(tasksApi.deleteTask("task-123")).rejects.toThrow(
+        "Delete failed",
       );
     });
   });
 
   describe("token management", () => {
     it("should include authorization header when token is available", async () => {
-      tasksApi.setTokenGetter(() => "my-secret-token");
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve([]),
-      });
+      mockFetch.mockResolvedValueOnce(createJsonResponse([]));
 
       await tasksApi.getAllTasks();
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: "Bearer my-secret-token",
-          }),
-        }),
-      );
+      const [, options] = mockFetch.mock.calls[0];
+      expect(options?.headers?.Authorization).toBe("Bearer test-token-123");
     });
 
     it("should not include authorization header when token is null", async () => {
       tasksApi.setTokenGetter(() => null);
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve([]),
-      });
+      mockFetch.mockResolvedValueOnce(createJsonResponse([]));
 
       await tasksApi.getAllTasks();
 
-      const callHeaders = mockFetch.mock.calls[0][1].headers;
-      expect(callHeaders["Authorization"]).toBeUndefined();
+      const [, options] = mockFetch.mock.calls[0];
+      expect(options?.headers?.Authorization).toBeUndefined();
     });
   });
 });

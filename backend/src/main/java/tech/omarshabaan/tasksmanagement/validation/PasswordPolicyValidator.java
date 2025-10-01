@@ -10,10 +10,12 @@ import org.passay.PasswordData;
 import org.passay.PasswordValidator;
 import org.passay.RepeatCharacterRegexRule;
 import org.passay.Rule;
+import org.springframework.aot.hint.annotation.Reflective;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Reflective
 public class PasswordPolicyValidator implements ConstraintValidator<PasswordPolicy, String> {
 
 	private static final int MIN_COMPLEX_RULES = 3;

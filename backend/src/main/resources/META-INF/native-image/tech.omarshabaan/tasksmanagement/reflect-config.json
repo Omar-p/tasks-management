@@ -1,0 +1,79 @@
+[
+  {
+    "name": "tech.omarshabaan.tasksmanagement.validation.UniqueUsernameValidator",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "tech.omarshabaan.tasksmanagement.validation.UniqueEmailValidator",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "tech.omarshabaan.tasksmanagement.validation.PasswordPolicyValidator",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true
+  },
+  {
+    "name": "tech.omarshabaan.tasksmanagement.validation.PasswordMatchValidator",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true
+  },
+  {
+    "name": "org.passay.PasswordValidator",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.passay.CharacterCharacteristicsRule",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.passay.CharacterRule",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.passay.EnglishCharacterData",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.passay.LengthRule",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.passay.PasswordData",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.passay.RepeatCharacterRegexRule",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.passay.Rule",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  }
+]

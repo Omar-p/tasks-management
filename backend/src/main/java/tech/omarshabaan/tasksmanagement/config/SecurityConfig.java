@@ -87,17 +87,19 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.POST, "/api/auth/signup")
 				.permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/auth/signin")
-				.permitAll()
+				.permitAll() //
 				.requestMatchers(HttpMethod.POST, "/api/auth/refresh")
-				.permitAll()
+				.permitAll() //
 				.requestMatchers(HttpMethod.POST, "/api/auth/logout")
-				.permitAll()
+				.permitAll() //
 				.requestMatchers(HttpMethod.GET, "/docs.html")
-				.permitAll()
+				.permitAll() //
 				.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-				.permitAll()
+				.permitAll() //
 				.requestMatchers("/actuator/health")
-				.permitAll()
+				.permitAll() //
+				.requestMatchers("/actuator/info")
+				.permitAll() //
 				.anyRequest()
 				.authenticated())
 			.oauth2ResourceServer(oauth2 -> oauth2.authenticationEntryPoint(delegatedAuthenticationEntryPoint)

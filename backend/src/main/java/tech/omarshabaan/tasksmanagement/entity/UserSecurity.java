@@ -152,6 +152,9 @@ public class UserSecurity extends BaseEntity {
 
 		private Set<Role> roles = new HashSet<>();
 
+		private Builder() {
+		}
+
 		public Builder id(Long id) {
 			this.id = id;
 			return this;

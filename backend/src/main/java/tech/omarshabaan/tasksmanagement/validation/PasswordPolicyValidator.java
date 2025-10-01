@@ -28,7 +28,10 @@ public class PasswordPolicyValidator implements ConstraintValidator<PasswordPoli
 
 	private static final int MAX_REPETITIVE_CHARS = 3;
 
-	@Override
+  public PasswordPolicyValidator() {
+  }
+
+  @Override
 	public boolean isValid(String password, ConstraintValidatorContext context) {
 		if (password == null) {
 			return false;

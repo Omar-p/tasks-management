@@ -9,7 +9,6 @@ import java.util.Objects;
 public class PasswordMatchValidator implements ConstraintValidator<PasswordMatch, Object> {
 
 	public PasswordMatchValidator() {
-		// Default constructor for Spring bean instantiation
 	}
 
 	@Override

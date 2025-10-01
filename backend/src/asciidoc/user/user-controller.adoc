@@ -23,7 +23,7 @@
 
 ====== Headers
 ifdef::request-headers[]
-include::{request-headers}[]
+include::{request-headers}[opts=optional]
 endif::request-headers[]
 ifndef::request-headers[]
 None
@@ -32,7 +32,7 @@ endif::request-headers[]
 
 ====== Path Parameters
 ifdef::request-path-params[]
-include::{request-path-params}[]
+include::{request-path-params}[opts=optional]
 endif::request-path-params[]
 ifndef::request-path-params[]
 None
@@ -40,7 +40,7 @@ endif::request-path-params[]
 
 ====== Query Parameters
 ifdef::request-query-params[]
-include::{request-query-params}[]
+include::{request-query-params}[opts=optional]
 endif::request-query-params[]
 ifndef::request-query-params[]
 None
@@ -48,7 +48,7 @@ endif::request-query-params[]
 
 ====== Payload Fields
 ifdef::request-fields[]
-include::{request-fields}[]
+include::{request-fields}[opts=optional]
 endif::request-fields[]
 ifndef::request-fields[]
 None
@@ -59,7 +59,7 @@ endif::request-fields[]
 
 ====== Headers
 ifdef::response-headers[]
-include::{response-headers}[]
+include::{response-headers}[opts=optional]
 endif::response-headers[]
 ifndef::response-headers[]
 None
@@ -67,7 +67,7 @@ endif::response-headers[]
 
 ====== Payload Fields
 ifdef::response-fields[]
-include::{response-fields}[]
+include::{response-fields}[opts=optional]
 endif::response-fields[]
 ifndef::response-fields[]
 None
@@ -78,13 +78,13 @@ endif::response-fields[]
 ===== HTTP Messages
 
 ====== Request
-include::{http-request}[]
+include::{http-request}[opts=optional]
 
 ====== Response
-include::{http-response}[]
+include::{http-response}[opts=optional]
 
 
 ====== Response if not authenticated:
-include::{controller-base}/get-profile/unauthorized/http-response.adoc[]
+include::{controller-base}/get-profile/unauthorized/http-response.adoc[opts=optional]
 
 '''

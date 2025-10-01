@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-rest-docs
-          path: target/generated-docs/**
+          path: target/classes/static/docs.html
 
   # Build and push Docker image
   build-and-push:
@@ -80,12 +80,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: backend-rest-docs
-          path: backend/target/generated-docs
+          path: backend/target/rest-docs
 
       - name: Stage REST Docs for native build
         run: |
           mkdir -p backend/src/main/resources/static
-          cp backend/target/generated-docs/docs.html backend/src/main/resources/static/docs.html
+          cp backend/target/rest-docs/docs.html backend/src/main/resources/static/docs.html
 
       - name: Authenticate to GitHub Container Registry (for GraalVM base image)
         uses: docker/login-action@v3

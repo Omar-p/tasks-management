@@ -1,19 +1,27 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useTaskMutations, useUserTasks } from "../useTaskMutations";
 import { TestWrapper } from "@/test-utils";
-import { TaskStatus, TaskPriority } from "@/services/tasks-api";
+import { TaskPriority, TaskStatus } from "@/services/tasks-api";
+import { createEmptyResponse, createJsonResponse } from "@/test/fetch-helpers";
 
-// Mock fetch globally
-global.fetch = vi.fn();
+const fetchMock = vi.fn();
+
+const mockTask = {
+  uuid: "task-123",
+  title: "Task Title",
+  description: "Task description",
+  status: TaskStatus.PENDING,
+  priority: TaskPriority.MEDIUM,
+  dueDate: "2025-12-31T12:00:00Z",
+};
 
 describe("useTaskMutations - Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
+    fetchMock.mockReset();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).fetch = fetchMock;
   });
 
   describe("createTask mutation", () => {
@@ -29,17 +37,9 @@ describe("useTaskMutations - Integration Tests", () => {
         uuid: "task-123",
         ...mockTaskData,
         status: TaskStatus.PENDING,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
       };
 
-      // Mock successful create
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        json: async () => mockCreatedTask,
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(createJsonResponse(mockCreatedTask));
 
       const { result } = renderHook(() => useTaskMutations(), {
         wrapper: TestWrapper,
@@ -62,18 +62,9 @@ describe("useTaskMutations - Integration Tests", () => {
         dueDate: "2025-12-31T12:00:00Z",
       };
 
-      // Mock validation error
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: async () => ({
-          message: "Validation failed",
-          fieldErrors: {
-            title: "Title is required",
-          },
-        }),
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(
+        createJsonResponse({ message: "Validation failed" }, { status: 400 }),
+      );
 
       const { result } = renderHook(() => useTaskMutations(), {
         wrapper: TestWrapper,
@@ -97,22 +88,11 @@ describe("useTaskMutations - Integration Tests", () => {
       };
 
       const mockUpdatedTask = {
-        uuid: "task-123",
-        title: "Task Title",
-        description: "Task description",
+        ...mockTask,
         status: TaskStatus.IN_PROGRESS,
-        priority: TaskPriority.MEDIUM,
-        dueDate: "2025-12-31T12:00:00Z",
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-02T00:00:00Z",
       };
 
-      // Mock successful update
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockUpdatedTask,
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(createJsonResponse(mockUpdatedTask));
 
       const { result } = renderHook(() => useTaskMutations(), {
         wrapper: TestWrapper,
@@ -135,13 +115,9 @@ describe("useTaskMutations - Integration Tests", () => {
         },
       };
 
-      // Mock 404 error
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: async () => ({ message: "Task not found" }),
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(
+        createJsonResponse({ message: "Task not found" }, { status: 404 }),
+      );
 
       const { result } = renderHook(() => useTaskMutations(), {
         wrapper: TestWrapper,
@@ -157,20 +133,13 @@ describe("useTaskMutations - Integration Tests", () => {
 
   describe("deleteTask mutation", () => {
     it("should delete task successfully", async () => {
-      const taskUuid = "task-123";
-
-      // Mock successful delete
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 204,
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(createEmptyResponse({ status: 204 }));
 
       const { result } = renderHook(() => useTaskMutations(), {
         wrapper: TestWrapper,
       });
 
-      result.current.deleteTask.mutate(taskUuid);
+      result.current.deleteTask.mutate("task-123");
 
       await waitFor(() => {
         expect(result.current.deleteTask.isSuccess).toBe(true);
@@ -178,21 +147,15 @@ describe("useTaskMutations - Integration Tests", () => {
     });
 
     it("should handle delete task error", async () => {
-      const taskUuid = "task-123";
-
-      // Mock error
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        json: async () => ({ message: "Forbidden" }),
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(
+        createJsonResponse({ message: "Forbidden" }, { status: 403 }),
+      );
 
       const { result } = renderHook(() => useTaskMutations(), {
         wrapper: TestWrapper,
       });
 
-      result.current.deleteTask.mutate(taskUuid);
+      result.current.deleteTask.mutate("task-123");
 
       await waitFor(() => {
         expect(result.current.deleteTask.isError).toBe(true);
@@ -219,18 +182,9 @@ describe("useTaskMutations - Integration Tests", () => {
             dueDate: "2025-12-30T12:00:00Z",
           },
         ],
-        totalElements: 2,
-        totalPages: 1,
-        size: 20,
-        number: 0,
       };
 
-      // Mock successful fetch
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockTasks,
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(createJsonResponse(mockTasks));
 
       const { result } = renderHook(() => useUserTasks(), {
         wrapper: TestWrapper,
@@ -241,17 +195,12 @@ describe("useTaskMutations - Integration Tests", () => {
       });
 
       expect(result.current.data).toEqual(mockTasks.content);
-      expect(result.current.data).toHaveLength(2);
     });
 
     it("should handle fetch tasks error", async () => {
-      // Mock error
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: async () => ({ message: "Unauthorized" }),
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(
+        createJsonResponse({ message: "Failed" }, { status: 500 }),
+      );
 
       const { result } = renderHook(() => useUserTasks(), {
         wrapper: TestWrapper,

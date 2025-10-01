@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { authApi, AuthApiError } from "../auth-api";
+import { authApi } from "../auth-api";
 import type { LoginRequest, SignupRequest } from "@/contexts/auth.types";
 import { DEFAULT_API_BASE_URL } from "@/config/env";
+import { createEmptyResponse, createJsonResponse } from "@/test/fetch-helpers";
 
-// Mock fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).fetch = mockFetch;
 
 describe("AuthAPI", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetch.mockReset();
 
-    // Set up token getter/setter for tests
     authApi.setTokenGetter(() => null);
     authApi.setTokenSetter(() => {});
     authApi.setLogoutHandler(() => {});
@@ -25,31 +25,16 @@ describe("AuthAPI", () => {
         password: "Test@12345",
       };
 
-      const mockApiResponse = {
-        accessToken: "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature",
-      };
+      const mockApiResponse = { accessToken: "access-token-123" };
+    const tokenSetter = vi.fn();
+    authApi.setTokenSetter(tokenSetter);
 
-      const mockUserProfile = {
-        uuid: "123",
-        username: "Test User",
-        email: "test@email.com",
-      };
+    mockFetch.mockResolvedValueOnce(createJsonResponse(mockApiResponse));
 
-      // Mock successful signin
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockApiResponse),
-      });
+    const result = await authApi.signin(mockCredentials);
 
-      // Mock successful user profile fetch
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockUserProfile),
-      });
-
-      const result = await authApi.signin(mockCredentials);
-
-      expect(mockFetch).toHaveBeenCalledWith(
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
         `${DEFAULT_API_BASE_URL}/auth/signin`,
         {
           method: "POST",
@@ -61,10 +46,9 @@ describe("AuthAPI", () => {
         },
       );
 
-      expect(result).toEqual({
-        accessToken: mockApiResponse.accessToken,
-      });
-    });
+    expect(result).toEqual({ accessToken: mockApiResponse.accessToken });
+    expect(tokenSetter).toHaveBeenCalledWith("access-token-123");
+  });
 
     it("should handle signin API error with field errors", async () => {
       const mockCredentials: LoginRequest = {
@@ -84,23 +68,18 @@ describe("AuthAPI", () => {
         },
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: () => Promise.resolve(errorResponse),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse(errorResponse, {
+          status: 400,
+          statusText: "Bad Request",
+        }),
+      );
 
-      try {
-        await authApi.signin(mockCredentials);
-        expect.fail("Should have thrown an error");
-      } catch (error) {
-        expect(error).toBeInstanceOf(AuthApiError);
-        if (error instanceof AuthApiError) {
-          expect(error.status).toBe(400);
-          expect(error.fieldErrors).toEqual(errorResponse.errors);
-          expect(error.message).toBe("Invalid email format");
-        }
-      }
+      await expect(authApi.signin(mockCredentials)).rejects.toMatchObject({
+        message: "Invalid email format",
+        status: 400,
+        fieldErrors: errorResponse.errors,
+      });
     });
 
     it("should handle signin with general error", async () => {
@@ -109,21 +88,34 @@ describe("AuthAPI", () => {
         password: "wrongpassword",
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: () =>
-          Promise.resolve({
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse(
+          {
             type: "about:blank",
             title: "Unauthorized",
             status: 401,
             detail: "Invalid credentials",
             instance: "/api/auth/signin",
-          }),
-      });
+          },
+          { status: 401, statusText: "Unauthorized" },
+        ),
+      );
 
       await expect(authApi.signin(mockCredentials)).rejects.toThrow(
         "Invalid credentials",
+      );
+    });
+
+    it("should surface network errors", async () => {
+      const mockCredentials: LoginRequest = {
+        email: "test@email.com",
+        password: "Test@12345",
+      };
+
+      mockFetch.mockRejectedValueOnce(new TypeError("network down"));
+
+      await expect(authApi.signin(mockCredentials)).rejects.toThrow(
+        "Unable to connect to the server",
       );
     });
   });
@@ -137,10 +129,7 @@ describe("AuthAPI", () => {
         confirmPassword: "Test@12345",
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      mockFetch.mockResolvedValueOnce(createEmptyResponse({ status: 201 }));
 
       await authApi.signup(mockRegistrationData);
 
@@ -178,20 +167,17 @@ describe("AuthAPI", () => {
         },
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: () => Promise.resolve(errorResponse),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse(errorResponse, {
+          status: 400,
+          statusText: "Bad Request",
+        }),
+      );
 
-      try {
-        await authApi.signup(mockRegistrationData);
-      } catch (error) {
-        expect(error).toBeInstanceOf(AuthApiError);
-        if (error instanceof AuthApiError) {
-          expect(error.fieldErrors).toBeDefined();
-        }
-      }
+      await expect(authApi.signup(mockRegistrationData)).rejects.toMatchObject({
+        status: 400,
+        fieldErrors: errorResponse.errors,
+      });
     });
   });
 
@@ -204,10 +190,7 @@ describe("AuthAPI", () => {
       const mockTokenSetter = vi.fn();
       authApi.setTokenSetter(mockTokenSetter);
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockApiResponse),
-      });
+      mockFetch.mockResolvedValueOnce(createJsonResponse(mockApiResponse));
 
       const result = await authApi.refresh();
 
@@ -220,24 +203,22 @@ describe("AuthAPI", () => {
       );
 
       expect(mockTokenSetter).toHaveBeenCalledWith("new-access-token-123");
-      expect(result).toEqual({
-        accessToken: "new-access-token-123",
-      });
+      expect(result).toEqual({ accessToken: "new-access-token-123" });
     });
 
     it("should handle refresh token error", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: () =>
-          Promise.resolve({
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse(
+          {
             type: "about:blank",
             title: "Unauthorized",
             status: 401,
             detail: "Invalid refresh token",
             instance: "/api/auth/refresh",
-          }),
-      });
+          },
+          { status: 401 },
+        ),
+      );
 
       await expect(authApi.refresh()).rejects.toThrow("Invalid refresh token");
     });
@@ -248,10 +229,7 @@ describe("AuthAPI", () => {
       const mockLogoutHandler = vi.fn();
       authApi.setLogoutHandler(mockLogoutHandler);
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      mockFetch.mockResolvedValueOnce(createEmptyResponse({ status: 204 }));
 
       await authApi.logout();
 
@@ -270,20 +248,19 @@ describe("AuthAPI", () => {
       const mockLogoutHandler = vi.fn();
       authApi.setLogoutHandler(mockLogoutHandler);
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: () =>
-          Promise.resolve({
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse(
+          {
             type: "about:blank",
             title: "Unauthorized",
             status: 401,
             detail: "Unauthorized",
             instance: "/api/auth/logout",
-          }),
-      });
+          },
+          { status: 401 },
+        ),
+      );
 
-      // Logout should not throw even if API fails
       await authApi.logout();
 
       expect(mockLogoutHandler).toHaveBeenCalled();
@@ -301,10 +278,7 @@ describe("AuthAPI", () => {
       const mockToken = "test-token-123";
       authApi.setTokenGetter(() => mockToken);
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockUserProfile),
-      });
+      mockFetch.mockResolvedValueOnce(createJsonResponse(mockUserProfile));
 
       const result = await authApi.getProfile();
 
@@ -325,11 +299,9 @@ describe("AuthAPI", () => {
     it("should handle profile fetch error", async () => {
       authApi.setTokenGetter(() => "invalid-token");
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: () => Promise.resolve({ detail: "Unauthorized" }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ detail: "Unauthorized" }, { status: 401 }),
+      );
 
       await expect(authApi.getProfile()).rejects.toThrow("Unauthorized");
     });

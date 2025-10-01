@@ -1,8 +1,9 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useAuthMutations } from "../useAuthMutations";
 import { TestWrapper } from "@/test-utils";
 import { toast } from "sonner";
+import { createEmptyResponse, createJsonResponse } from "@/test/fetch-helpers";
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
@@ -19,17 +20,15 @@ vi.mock("sonner", () => ({
   },
 }));
 
-// Mock fetch globally
-global.fetch = vi.fn();
+const fetchMock = vi.fn();
 
 describe("useAuthMutations - Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
+    fetchMock.mockReset();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).fetch = fetchMock;
   });
 
   describe("login mutation", () => {
@@ -50,18 +49,10 @@ describe("useAuthMutations - Integration Tests", () => {
       };
 
       // Mock successful signin
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(createJsonResponse(mockResponse));
 
       // Mock successful profile fetch
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockUser,
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(createJsonResponse(mockUser));
 
       const { result } = renderHook(() => useAuthMutations(), {
         wrapper: TestWrapper,
@@ -85,12 +76,9 @@ describe("useAuthMutations - Integration Tests", () => {
       };
 
       // Mock failed signin
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: async () => ({ message: "Invalid credentials" }),
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(
+        createJsonResponse({ message: "Invalid credentials" }, { status: 401 }),
+      );
 
       const { result } = renderHook(() => useAuthMutations(), {
         wrapper: TestWrapper,
@@ -117,12 +105,7 @@ describe("useAuthMutations - Integration Tests", () => {
       };
 
       // Mock successful signup
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        json: async () => ({}),
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(createEmptyResponse({ status: 201 }));
 
       const { result } = renderHook(() => useAuthMutations(), {
         wrapper: TestWrapper,
@@ -149,18 +132,18 @@ describe("useAuthMutations - Integration Tests", () => {
       };
 
       // Mock validation error
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: async () => ({
-          message: "Validation failed",
-          fieldErrors: {
-            username: "Username must be at least 3 characters",
-            email: "Invalid email format",
+      fetchMock.mockResolvedValueOnce(
+        createJsonResponse(
+          {
+            message: "Validation failed",
+            fieldErrors: {
+              username: "Username must be at least 3 characters",
+              email: "Invalid email format",
+            },
           },
-        }),
-        headers: new Headers(),
-      });
+          { status: 400 },
+        ),
+      );
 
       const { result } = renderHook(() => useAuthMutations(), {
         wrapper: TestWrapper,
@@ -186,11 +169,7 @@ describe("useAuthMutations - Integration Tests", () => {
       );
 
       // Mock successful logout
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ message: "Logged out successfully" }),
-        headers: new Headers(),
-      });
+      fetchMock.mockResolvedValueOnce(createEmptyResponse({ status: 204 }));
 
       const { result } = renderHook(() => useAuthMutations(), {
         wrapper: TestWrapper,

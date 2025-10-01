@@ -22,7 +22,7 @@
 
 .dark {
   /* Improved dark theme colors */
-  --color-primary: #001081; /* Keep blue strong for brand identity */
+  --color-primary: #4c6fff; /* Slightly lighter blue for better contrast on dark */
   --color-secondary: #1eed93; /* Accent green for highlights */
   --color-background: #111318; /* Softer dark gray (not pure black) */
   --color-surface: #1c1f26; /* Cards/forms */

@@ -1,8 +1,13 @@
 import { renderHook, waitFor } from "@testing-library/react";
+import type { InfiniteData } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useTaskMutations, useUserTasks } from "../useTaskMutations";
 import { TestWrapper } from "@/test-utils";
-import { TaskPriority, TaskStatus } from "@/services/tasks-api";
+import {
+  TaskPriority,
+  TaskStatus,
+  type PaginatedTasksResponse,
+} from "@/services/tasks-api";
 import { createEmptyResponse, createJsonResponse } from "@/test/fetch-helpers";
 
 const fetchMock = vi.fn();
@@ -194,7 +199,16 @@ describe("useTaskMutations - Integration Tests", () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(result.current.data).toEqual(mockTasks.content);
+      const data = result.current.data as
+        | InfiniteData<PaginatedTasksResponse>
+        | undefined;
+      expect(data).toBeDefined();
+      if (!data) {
+        return;
+      }
+
+      expect(data.pages[0].content).toEqual(mockTasks.content);
+      expect(data.pages[0].page.number).toBe(0);
     });
 
     it("should handle fetch tasks error", async () => {

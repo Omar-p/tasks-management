@@ -78,7 +78,7 @@ describe("TasksAPI", () => {
       const result = await tasksApi.getUserTasks();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${DEFAULT_API_BASE_URL}/tasks/me`,
+        `${DEFAULT_API_BASE_URL}/tasks/me?page=0&size=20`,
         {
           method: "GET",
           headers: {
@@ -88,7 +88,9 @@ describe("TasksAPI", () => {
         },
       );
 
-      expect(result).toEqual(mockTasks);
+      expect(result.content).toEqual(mockTasks);
+      expect(result.page.number).toBe(0);
+      expect(result.page.size).toBe(20);
     });
 
     it("should fetch user tasks with status filter", async () => {
@@ -107,11 +109,13 @@ describe("TasksAPI", () => {
         createJsonResponse({ content: mockTasks }),
       );
 
-      const result = await tasksApi.getUserTasks(TaskStatus.COMPLETED);
+      const result = await tasksApi.getUserTasks({
+        status: TaskStatus.COMPLETED,
+      });
 
       const [url] = mockFetch.mock.calls[0];
       expect(url).toContain("status=COMPLETED");
-      expect(result).toEqual(mockTasks);
+      expect(result.content).toEqual(mockTasks);
     });
   });
 

@@ -61,6 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const setTokens = (tokens: AuthTokens) => {
     setAccessToken(tokens.accessToken);
+    accessTokenRef.current = tokens.accessToken;
     // Get user data from localStorage that was set during login
     const userData = localStorage.getItem("user_data");
     if (userData) {
@@ -79,7 +80,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (credentials: import("./auth.types").LoginRequest) => {
     const tokens = await authApi.signin(credentials);
-    setAccessToken(tokens.accessToken);
+    setTokens(tokens);
 
     // Fetch user profile after successful signin
     try {
@@ -89,7 +90,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } catch (error) {
       console.error("Failed to fetch user profile after signin:", error);
       // Clear tokens if profile fetch fails
-      setAccessToken(null);
+      clearAuthState();
       throw error;
     }
 

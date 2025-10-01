@@ -47,7 +47,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       {...listeners}
       onClick={onClick}
       className={cn(
-        "bg-surface rounded-lg p-4 shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow",
+        "bg-surface rounded-lg p-4 shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow touch-none select-none",
         isDragging && "opacity-50",
       )}
     >

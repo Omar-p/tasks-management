@@ -37,7 +37,7 @@ export function TaskColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col bg-surface-alt rounded-lg p-4 border-t-4 border-l border-r border-b border-border min-h-[500px] w-80",
+        "flex flex-col bg-surface-alt rounded-lg p-4 border-t-4 border-l border-r border-b border-border min-h-[500px] flex-1 min-w-[280px]",
         statusColors[status],
         isOver && "ring-2 ring-primary",
       )}

@@ -6,6 +6,7 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  TouchSensor,
   rectIntersection,
   useSensor,
   useSensors,
@@ -46,6 +47,12 @@ export function TaskBoard({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 8,
       },
     }),
   );
@@ -149,7 +156,7 @@ export function TaskBoard({
       onDragEnd={handleDragEnd}
       collisionDetection={rectIntersection}
     >
-      <div className="flex gap-6 pb-4">
+      <div className="flex w-full gap-6 pb-4 items-start">
         {columns.map((column) => (
           <TaskColumn
             key={column.status}

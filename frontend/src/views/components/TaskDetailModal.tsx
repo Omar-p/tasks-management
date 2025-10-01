@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -16,6 +18,7 @@ import { useTask, useTaskMutations } from "@/hooks/useTaskMutations";
 import { TaskPriority, TaskStatus } from "@/services/tasks-api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { updateTaskSchema, type UpdateTaskFormData } from "@/lib/validation";
 
 interface TaskDetailModalProps {
   taskUuid: string | null;
@@ -49,17 +52,28 @@ export function TaskDetailModal({
   const { updateTask } = useTaskMutations();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    status: TaskStatus.PENDING,
-    priority: TaskPriority.MEDIUM,
-    dueDate: new Date(),
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+  } = useForm<UpdateTaskFormData>({
+    resolver: zodResolver(updateTaskSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      status: TaskStatus.PENDING,
+      priority: TaskPriority.MEDIUM,
+      dueDate: new Date(),
+    },
   });
 
   useEffect(() => {
     if (task) {
-      setFormData({
+      reset({
         title: task.title,
         description: task.description || "",
         status: task.status,
@@ -67,20 +81,20 @@ export function TaskDetailModal({
         dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
       });
     }
-  }, [task]);
+  }, [task, reset]);
 
-  const handleSave = async () => {
+  const onSubmit = async (data: UpdateTaskFormData) => {
     if (!taskUuid) return;
 
     try {
       await updateTask.mutateAsync({
         uuid: taskUuid,
         taskData: {
-          title: formData.title,
-          description: formData.description,
-          status: formData.status,
-          priority: formData.priority,
-          dueDate: formData.dueDate.toISOString(),
+          title: data.title,
+          description: data.description || "",
+          status: data.status as TaskStatus,
+          priority: data.priority as TaskPriority,
+          dueDate: data.dueDate.toISOString(),
         },
       });
       toast.success("Task updated successfully!");
@@ -125,19 +139,26 @@ export function TaskDetailModal({
 
             <div className="space-y-6">
               {isEditing ? (
-                <>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   {/* Title */}
                   <div>
                     <label className="text-sm font-medium text-foreground">
                       Title
                     </label>
                     <Input
-                      value={formData.title}
-                      onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
-                      }
-                      className="mt-1"
+                      {...register("title")}
+                      disabled={updateTask.isPending}
+                      className={cn(
+                        "mt-1",
+                        errors.title && "border-destructive",
+                      )}
                     />
+                    {errors.title && (
+                      <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                        <span>⚠️</span>
+                        {errors.title.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Description */}
@@ -146,15 +167,19 @@ export function TaskDetailModal({
                       Description
                     </label>
                     <Textarea
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      className="mt-1 min-h-[100px]"
+                      {...register("description")}
+                      disabled={updateTask.isPending}
+                      className={cn(
+                        "mt-1 min-h-[100px]",
+                        errors.description && "border-destructive",
+                      )}
                     />
+                    {errors.description && (
+                      <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                        <span>⚠️</span>
+                        {errors.description.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Status */}
@@ -163,14 +188,12 @@ export function TaskDetailModal({
                       Status
                     </label>
                     <Select
-                      value={formData.status}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          status: e.target.value as TaskStatus,
-                        })
-                      }
-                      className="mt-1"
+                      {...register("status")}
+                      disabled={updateTask.isPending}
+                      className={cn(
+                        "mt-1",
+                        errors.status && "border-destructive",
+                      )}
                     >
                       {Object.entries(statusConfig).map(([key, config]) => (
                         <option key={key} value={key}>
@@ -178,6 +201,12 @@ export function TaskDetailModal({
                         </option>
                       ))}
                     </Select>
+                    {errors.status && (
+                      <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                        <span>⚠️</span>
+                        {errors.status.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Priority */}
@@ -186,14 +215,12 @@ export function TaskDetailModal({
                       Priority
                     </label>
                     <Select
-                      value={formData.priority}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          priority: e.target.value as TaskPriority,
-                        })
-                      }
-                      className="mt-1"
+                      {...register("priority")}
+                      disabled={updateTask.isPending}
+                      className={cn(
+                        "mt-1",
+                        errors.priority && "border-destructive",
+                      )}
                     >
                       {Object.entries(priorityConfig).map(([key, config]) => (
                         <option key={key} value={key}>
@@ -201,6 +228,12 @@ export function TaskDetailModal({
                         </option>
                       ))}
                     </Select>
+                    {errors.priority && (
+                      <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                        <span>⚠️</span>
+                        {errors.priority.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Due Date */}
@@ -209,21 +242,26 @@ export function TaskDetailModal({
                       Due Date
                     </label>
                     <DatePicker
-                      value={formData.dueDate}
-                      onChange={(date) =>
-                        date && setFormData({ ...formData, dueDate: date })
-                      }
+                      value={watch("dueDate")}
+                      onChange={(date) => date && setValue("dueDate", date)}
                     />
+                    {errors.dueDate && (
+                      <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                        <span>⚠️</span>
+                        {errors.dueDate.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
                   <div className="flex gap-3 pt-4">
                     <Button
+                      type="button"
                       variant="outline"
                       onClick={() => {
                         setIsEditing(false);
                         if (task) {
-                          setFormData({
+                          reset({
                             title: task.title,
                             description: task.description || "",
                             status: task.status,
@@ -234,19 +272,20 @@ export function TaskDetailModal({
                           });
                         }
                       }}
+                      disabled={updateTask.isPending}
                       className="flex-1"
                     >
                       Cancel
                     </Button>
                     <Button
-                      onClick={handleSave}
+                      type="submit"
                       disabled={updateTask.isPending}
                       className="flex-1"
                     >
                       {updateTask.isPending ? "Saving..." : "Save Changes"}
                     </Button>
                   </div>
-                </>
+                </form>
               ) : (
                 <>
                   {/* Status */}

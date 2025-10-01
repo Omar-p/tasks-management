@@ -62,4 +62,16 @@ export const createTaskSchema = z.object({
     }),
 });
 
+export const updateTaskSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(255, "Title must be less than 255 characters"),
+  description: z.string().optional(),
+  status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
+  dueDate: z.date(),
+});
+
 export type CreateTaskFormData = z.infer<typeof createTaskSchema>;
+export type UpdateTaskFormData = z.infer<typeof updateTaskSchema>;

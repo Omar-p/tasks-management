@@ -147,7 +147,7 @@
       Type: AWS::ECS::Service
       Properties:
         Cluster: !Ref EcsCluster
-        DesiredCount: 0
+        DesiredCount: 1
         DeploymentConfiguration:
           MaximumPercent: 100
           MinimumHealthyPercent: 0

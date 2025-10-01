@@ -45,3 +45,12 @@ logging:
   level:
     org.springframework.security: ${SECURITY_LOG_LEVEL:TRACE}
     org.flywaydb: INFO
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+

@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const accessTokenRef = useRef(accessToken);
   accessTokenRef.current = accessToken;
+  const hasInitializedRef = useRef(false);
 
   const clearAuthState = useCallback(() => {
     setAccessToken(null);
@@ -30,6 +31,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [clearAuthState]);
 
   useEffect(() => {
+    if (hasInitializedRef.current) {
+      return;
+    }
+    hasInitializedRef.current = true;
+
     const initializeAuth = async () => {
       const userData = localStorage.getItem("user_data");
 

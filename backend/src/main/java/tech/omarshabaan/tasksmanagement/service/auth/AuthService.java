@@ -60,7 +60,8 @@ public class AuthService {
 		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 		String accessToken = jwtService.generateAccessToken(userDetails);
 
-		RefreshTokenResponse refreshToken = refreshTokenService.createRefreshToken(userDetails.getUserSecurity());
+		UserSecurity userSecurity = userAuthService.findUserSecurityByEmail(userDetails.getEmail());
+		RefreshTokenResponse refreshToken = refreshTokenService.createRefreshToken(userSecurity);
 		setRefreshTokenCookie(response, refreshToken.rawToken());
 
 		logger.info("User authenticated successfully for email: {}", request.email());
@@ -77,6 +78,7 @@ public class AuthService {
 
 		UserSecurity userSecurity = refreshToken.getUser();
 
+		// Extract authorities from UserSecurity
 		List<String> authorities = userSecurity.getRoles()
 			.stream()
 			.flatMap(role -> role.getAuthorities().stream())
@@ -85,7 +87,13 @@ public class AuthService {
 
 		userSecurity.getRoles().forEach(role -> authorities.add("ROLE_" + role.getName().toString()));
 
-		String accessToken = jwtService.generateAccessToken(userSecurity, authorities);
+		// Get the User domain entity to retrieve the userUuid
+		tech.omarshabaan.tasksmanagement.entity.User user = userAuthService.findUserByUserSecurity(userSecurity);
+
+		// Generate access token with User UUID as subject and UserSecurity UUID for
+		// traceability
+		String accessToken = jwtService.generateAccessToken(user.getUuid(), userSecurity.getUuid(),
+				userSecurity.getEmail(), authorities);
 
 		RefreshTokenResponse newRefreshToken = refreshTokenService.createRefreshToken(userSecurity);
 		setRefreshTokenCookie(response, newRefreshToken.rawToken());

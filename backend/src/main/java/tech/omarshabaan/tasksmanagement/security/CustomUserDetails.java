@@ -1,49 +1,68 @@
 package tech.omarshabaan.tasksmanagement.security;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import tech.omarshabaan.tasksmanagement.entity.Authority;
-import tech.omarshabaan.tasksmanagement.entity.Role;
-import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
+/**
+ * Security principal that can be built from either database (for authentication) or JWT
+ * claims (for authorization).
+ */
 public class CustomUserDetails implements UserDetails {
 
-	private final UserSecurity userSecurity;
+	private final UUID userUuid;
 
-	public CustomUserDetails(UserSecurity userSecurity) {
-		this.userSecurity = userSecurity;
+	private final UUID userSecurityUuid;
+
+	private final String email;
+
+	private final String password; // Only used during initial authentication, null for
+									// JWT-based requests
+
+	private final Collection<? extends GrantedAuthority> authorities;
+
+	private final boolean enabled;
+
+	private final boolean accountNonLocked;
+
+	/**
+	 * Constructor for authentication (from database) - includes password for credential
+	 * verification.
+	 */
+	public CustomUserDetails(UUID userUuid, UUID userSecurityUuid, String email, String password,
+			Collection<? extends GrantedAuthority> authorities, boolean enabled, boolean accountNonLocked) {
+		this.userUuid = userUuid;
+		this.userSecurityUuid = userSecurityUuid;
+		this.email = email;
+		this.password = password;
+		this.authorities = authorities;
+		this.enabled = enabled;
+		this.accountNonLocked = accountNonLocked;
+	}
+
+	/**
+	 * Constructor for JWT-based authorization (no password needed).
+	 */
+	public CustomUserDetails(UUID userUuid, UUID userSecurityUuid, String email,
+			Collection<? extends GrantedAuthority> authorities, boolean enabled, boolean accountNonLocked) {
+		this(userUuid, userSecurityUuid, email, null, authorities, enabled, accountNonLocked);
 	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		Set<GrantedAuthority> authorities = userSecurity.getRoles()
-			.stream()
-			.flatMap(role -> role.getAuthorities().stream())
-			.map(authority -> new SimpleGrantedAuthority(authority.getName().name()))
-			.collect(Collectors.toSet());
-
-		Set<GrantedAuthority> roleAuthorities = userSecurity.getRoles()
-			.stream()
-			.map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
-			.collect(Collectors.toSet());
-
-		authorities.addAll(roleAuthorities);
 		return authorities;
 	}
 
 	@Override
 	public String getPassword() {
-		return userSecurity.getPassword();
+		return password;
 	}
 
 	@Override
 	public String getUsername() {
-		return userSecurity.getEmail();
+		return email;
 	}
 
 	@Override
@@ -53,7 +72,7 @@ public class CustomUserDetails implements UserDetails {
 
 	@Override
 	public boolean isAccountNonLocked() {
-		return !userSecurity.isLocked();
+		return accountNonLocked;
 	}
 
 	@Override
@@ -63,15 +82,25 @@ public class CustomUserDetails implements UserDetails {
 
 	@Override
 	public boolean isEnabled() {
-		return userSecurity.isEnabled();
+		return enabled;
 	}
 
-	public UserSecurity getUserSecurity() {
-		return userSecurity;
+	/**
+	 * @return the main domain user identifier (User UUID)
+	 */
+	public UUID getUserUuid() {
+		return userUuid;
 	}
 
-	public Long getUserId() {
-		return userSecurity.getId();
+	/**
+	 * @return the UserSecurity UUID for traceability (optional)
+	 */
+	public UUID getUserSecurityUuid() {
+		return userSecurityUuid;
+	}
+
+	public String getEmail() {
+		return email;
 	}
 
 }

@@ -1,0 +1,3 @@
+ALTER TABLE tasks
+    ALTER COLUMN due_date TYPE TIMESTAMPTZ
+    USING due_date AT TIME ZONE 'UTC';

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -61,6 +61,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 		var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
 		problemDetail.setTitle("Invalid Refresh Token");
+		return problemDetail;
+	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	ProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
+		logger.warn("Access denied: {}", ex.getMessage());
+
+		var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN,
+				"You do not have permission to access this resource");
+		problemDetail.setTitle("Access Denied");
 		return problemDetail;
 	}
 

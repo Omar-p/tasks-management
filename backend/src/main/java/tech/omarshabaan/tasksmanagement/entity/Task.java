@@ -15,7 +15,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import com.fasterxml.uuid.Generators;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -45,7 +45,7 @@ public class Task extends BaseEntity {
 	private TaskPriority priority = TaskPriority.MEDIUM;
 
 	@Column
-	private LocalDateTime dueDate;
+	private Instant dueDate;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "created_by_id", nullable = false)
@@ -65,7 +65,7 @@ public class Task extends BaseEntity {
 	protected Task() {
 	}
 
-	public Task(String title, String description, TaskPriority priority, LocalDateTime dueDate, User createdBy,
+	public Task(String title, String description, TaskPriority priority, Instant dueDate, User createdBy,
 			User assignedTo) {
 		this.title = title;
 		this.description = description;
@@ -119,11 +119,11 @@ public class Task extends BaseEntity {
 		this.priority = priority;
 	}
 
-	public LocalDateTime getDueDate() {
+	public Instant getDueDate() {
 		return dueDate;
 	}
 
-	public void setDueDate(LocalDateTime dueDate) {
+	public void setDueDate(Instant dueDate) {
 		this.dueDate = dueDate;
 	}
 

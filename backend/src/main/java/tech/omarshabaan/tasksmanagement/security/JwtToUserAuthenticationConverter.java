@@ -1,40 +1,46 @@
 package tech.omarshabaan.tasksmanagement.security;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
-import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
-import tech.omarshabaan.tasksmanagement.repository.auth.UserSecurityRepository;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+/**
+ * Converts JWT to an authentication token with CustomUserDetails as the principal. Looks
+ * up UserSecurity by UUID to get current enabled/locked status.
+ */
 @Component
 public class JwtToUserAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
-
-	private static final Logger logger = LoggerFactory.getLogger(JwtToUserAuthenticationConverter.class);
-
-	private final UserSecurityRepository userSecurityRepository;
-
-	public JwtToUserAuthenticationConverter(UserSecurityRepository userSecurityRepository) {
-		this.userSecurityRepository = userSecurityRepository;
-	}
 
 	@Override
 	public AbstractAuthenticationToken convert(Jwt jwt) {
 		UUID userUuid = UUID.fromString(jwt.getSubject());
 
-		UserSecurity userSecurity = userSecurityRepository.findByUuid(userUuid).orElseThrow(() -> {
-			logger.error("UserSecurity not found for UUID: {} from JWT subject", userUuid);
-			return new RuntimeException("UserSecurity not found for UUID: " + userUuid);
-		});
+		if (!jwt.hasClaim("user_security_uuid")) {
+			throw new IllegalArgumentException("JWT missing required claim: user_security_uuid");
+		}
+		UUID userSecurityUuid = UUID.fromString(jwt.getClaimAsString("user_security_uuid"));
 
-		CustomUserDetails userDetails = new CustomUserDetails(userSecurity);
+		String email = jwt.getClaimAsString("email");
 
-		return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+		List<String> roles = jwt.getClaimAsStringList("authorities");
+
+		Set<GrantedAuthority> grantedAuthorities = roles.stream()
+			.map(SimpleGrantedAuthority::new)
+			.collect(Collectors.toSet());
+
+		CustomUserDetails userDetails = new CustomUserDetails(userUuid, userSecurityUuid, email, grantedAuthorities,
+				true, true);
+
+		return new UsernamePasswordAuthenticationToken(userDetails, null, grantedAuthorities);
 	}
 
 }

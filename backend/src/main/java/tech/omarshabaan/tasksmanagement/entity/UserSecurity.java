@@ -132,6 +132,10 @@ public class UserSecurity extends BaseEntity {
 		role.getUsers().remove(this);
 	}
 
+	public static Builder builder() {
+		return new Builder();
+	}
+
 	public static class Builder {
 
 		private Long id;
@@ -147,6 +151,9 @@ public class UserSecurity extends BaseEntity {
 		private boolean enabled;
 
 		private Set<Role> roles = new HashSet<>();
+
+		private Builder() {
+		}
 
 		public Builder id(Long id) {
 			this.id = id;

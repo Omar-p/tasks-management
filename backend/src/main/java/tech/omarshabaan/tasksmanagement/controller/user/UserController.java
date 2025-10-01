@@ -21,7 +21,7 @@ public class UserController {
 
 	@GetMapping("/me")
 	public ResponseEntity<UserProfileResponse> getUserProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		UserProfileResponse profile = userService.getUserProfile(userDetails.getUserSecurity());
+		UserProfileResponse profile = userService.getUserProfile(userDetails.getUserUuid(), userDetails.getEmail());
 		return ResponseEntity.ok(profile);
 	}
 

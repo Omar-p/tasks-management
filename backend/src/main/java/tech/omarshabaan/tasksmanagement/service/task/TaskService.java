@@ -11,7 +11,6 @@ import tech.omarshabaan.tasksmanagement.dto.task.UpdateTaskRequest;
 import tech.omarshabaan.tasksmanagement.entity.Task;
 import tech.omarshabaan.tasksmanagement.entity.TaskStatus;
 import tech.omarshabaan.tasksmanagement.entity.User;
-import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
 import tech.omarshabaan.tasksmanagement.repository.task.TaskRepository;
 
 import java.util.UUID;
@@ -29,8 +28,8 @@ public class TaskService {
 		this.userLookupService = userLookupService;
 	}
 
-	public GetTaskResponse createTask(CreateTaskRequest request, UserSecurity userSecurity) {
-		User user = userLookupService.findUserByUserSecurity(userSecurity);
+	public GetTaskResponse createTask(CreateTaskRequest request, UUID userUuid) {
+		User user = userLookupService.findUserByUuid(userUuid);
 
 		Task task = new Task(request.title(), request.description(), request.priority(), request.dueDate(), user, user);
 
@@ -39,8 +38,8 @@ public class TaskService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<TaskSummaryResponse> getUserTasks(UserSecurity userSecurity, TaskStatus status, Pageable pageable) {
-		User user = userLookupService.findUserByUserSecurity(userSecurity);
+	public Page<TaskSummaryResponse> getUserTasks(UUID userUuid, TaskStatus status, Pageable pageable) {
+		User user = userLookupService.findUserByUuid(userUuid);
 
 		if (status != null) {
 			return taskRepository.findByAssignedToAndStatus(user, status, pageable).map(this::mapToTaskSummaryResponse);
@@ -51,8 +50,8 @@ public class TaskService {
 	}
 
 	@Transactional(readOnly = true)
-	public GetTaskResponse getTaskByUuid(UUID taskUuid, UserSecurity userSecurity) {
-		User user = userLookupService.findUserByUserSecurity(userSecurity);
+	public GetTaskResponse getTaskByUuid(UUID taskUuid, UUID userUuid) {
+		User user = userLookupService.findUserByUuid(userUuid);
 
 		Task task = taskRepository.findByUuidAndAssignedTo(taskUuid, user)
 			.orElseThrow(() -> new RuntimeException("Task not found"));
@@ -60,8 +59,8 @@ public class TaskService {
 		return mapToGetTaskResponse(task);
 	}
 
-	public GetTaskResponse updateTask(UUID taskUuid, UpdateTaskRequest request, UserSecurity userSecurity) {
-		User user = userLookupService.findUserByUserSecurity(userSecurity);
+	public GetTaskResponse updateTask(UUID taskUuid, UpdateTaskRequest request, UUID userUuid) {
+		User user = userLookupService.findUserByUuid(userUuid);
 
 		Task task = taskRepository.findByUuidAndAssignedTo(taskUuid, user)
 			.orElseThrow(() -> new RuntimeException("Task not found"));
@@ -86,8 +85,8 @@ public class TaskService {
 		return mapToGetTaskResponse(savedTask);
 	}
 
-	public void deleteTask(UUID taskUuid, UserSecurity userSecurity) {
-		User user = userLookupService.findUserByUserSecurity(userSecurity);
+	public void deleteTask(UUID taskUuid, UUID userUuid) {
+		User user = userLookupService.findUserByUuid(userUuid);
 
 		Task task = taskRepository.findByUuidAndAssignedTo(taskUuid, user)
 			.orElseThrow(() -> new RuntimeException("Task not found"));

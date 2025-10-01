@@ -1,10 +1,11 @@
 package tech.omarshabaan.tasksmanagement.service.task;
 
 import tech.omarshabaan.tasksmanagement.entity.User;
-import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
+
+import java.util.UUID;
 
 public interface UserLookupService {
 
-	User findUserByUserSecurity(UserSecurity userSecurity);
+	User findUserByUuid(UUID userUuid);
 
 }

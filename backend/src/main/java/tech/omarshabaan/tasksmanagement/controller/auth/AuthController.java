@@ -49,7 +49,6 @@ public class AuthController {
 	public ResponseEntity<UserSigninResponse> refresh(
 			@CookieValue(name = "${app.security.refresh-token.cookie.name}", required = false) String refreshTokenValue,
 			HttpServletResponse response) {
-		System.out.println("Refresh token value: " + refreshTokenValue); // Debugging line
 
 		if (refreshTokenValue == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

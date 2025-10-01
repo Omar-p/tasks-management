@@ -5,11 +5,14 @@ import tech.omarshabaan.tasksmanagement.entity.User;
 import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
 	boolean existsByUsername(String username);
 
 	Optional<User> findByUserSecurity(UserSecurity userSecurity);
+
+	Optional<User> findByUuid(UUID uuid);
 
 }

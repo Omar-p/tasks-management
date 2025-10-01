@@ -1,0 +1,31 @@
+= Tasks Management API
+:revnumber: 0.0.1
+:revdate: 2024-05-14
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: github
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectnums: true
+:snippets: ../../../build/generated-snippets
+
+== Introduction
+
+This document provides comprehensive API documentation for the Tasks Management system. The API allows users to manage their tasks, authenticate, and manage their profiles.
+
+=== Base URL
+`/api`
+
+=== Authentication
+Most endpoints require authentication via JWT Bearer token. Include the token in the Authorization header:
+`Authorization: Bearer {access_token}`
+
+== Controllers
+
+include::auth/auth-controller.adoc[]
+
+include::task/task-controller.adoc[]
+
+include::user/user-controller.adoc[]

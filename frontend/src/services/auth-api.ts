@@ -5,6 +5,7 @@ import {
   AuthTokens,
 } from "@/contexts/auth.types";
 import { getApiBaseUrl } from "@/config/env";
+import { parseJsonSafely } from "@/lib/http";
 
 const API_BASE_URL = getApiBaseUrl();
 
@@ -45,7 +46,13 @@ let logoutHandler: (() => void) | null = null;
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     try {
-      const errorData: ProblemDetails = await response.json();
+      const errorData: ProblemDetails = (await parseJsonSafely(response)) ?? {
+        detail: "Request failed",
+        title: response.statusText,
+        status: response.status,
+        type: "about:blank",
+        instance: response.url,
+      };
 
       // Handle ProblemDetails format
       if (errorData.errors && Object.keys(errorData.errors).length > 0) {
@@ -73,7 +80,7 @@ const handleResponse = async (response: Response) => {
       throw parseError;
     }
   }
-  return response.json();
+  return parseJsonSafely(response);
 };
 
 const getAuthHeaders = () => {
@@ -111,11 +118,15 @@ export const authApi = {
 
       const result = await handleResponse(response);
 
-      if (tokenSetter) {
-        tokenSetter(result.accessToken);
+      if (!result || typeof result !== "object" || !("accessToken" in result)) {
+        throw new AuthApiError("Invalid signin response", response.status);
       }
 
-      return { accessToken: result.accessToken };
+      if (tokenSetter) {
+        tokenSetter((result as AuthTokens).accessToken);
+      }
+
+      return { accessToken: (result as AuthTokens).accessToken };
     } catch (error) {
       if (error instanceof TypeError) {
         throw new AuthApiError(
@@ -156,12 +167,16 @@ export const authApi = {
 
       const result = await handleResponse(response);
 
-      // Update the access token
-      if (tokenSetter) {
-        tokenSetter(result.accessToken);
+      if (!result || typeof result !== "object" || !("accessToken" in result)) {
+        throw new AuthApiError("Invalid refresh response", response.status);
       }
 
-      return { accessToken: result.accessToken };
+      // Update the access token
+      if (tokenSetter) {
+        tokenSetter((result as AuthTokens).accessToken);
+      }
+
+      return { accessToken: (result as AuthTokens).accessToken };
     } catch (error) {
       if (error instanceof TypeError) {
         throw new AuthApiError(
@@ -198,7 +213,13 @@ export const authApi = {
         headers: getAuthHeaders(),
       });
 
-      return handleResponse(response);
+      const result = await handleResponse(response);
+
+      if (!result) {
+        throw new AuthApiError("Empty profile response", response.status);
+      }
+
+      return result as User;
     } catch (error) {
       if (error instanceof TypeError) {
         throw new AuthApiError(

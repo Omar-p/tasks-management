@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/config/env";
+import { parseJsonSafely } from "@/lib/http";
 
 export interface Task {
   uuid: string;
@@ -52,10 +53,7 @@ export interface UpdateTaskRequest {
 const API_BASE_URL = getApiBaseUrl();
 
 class TasksApiError extends Error {
-  constructor(
-    message: string,
-    public status?: number,
-  ) {
+  constructor(message: string, public status?: number) {
     super(message);
     this.name = "TasksApiError";
   }
@@ -74,7 +72,7 @@ const handleResponse = async (response: Response) => {
       response.status,
     );
   }
-  return response.json();
+  return parseJsonSafely<unknown>(response);
 };
 
 const getAuthHeaders = () => {
@@ -97,7 +95,8 @@ export const tasksApi = {
         headers: getAuthHeaders(),
       });
 
-      return handleResponse(response);
+      const data = await handleResponse(response);
+      return Array.isArray(data) ? (data as Task[]) : [];
     } catch (error) {
       if (error instanceof TypeError) {
         throw new TasksApiError(
@@ -121,8 +120,19 @@ export const tasksApi = {
       });
 
       const data = await handleResponse(response);
-      // Backend returns paginated response, extract content array
-      return data.content || data;
+      if (!data) {
+        return [];
+      }
+
+      if (Array.isArray(data)) {
+        return data as Task[];
+      }
+
+      if (data && typeof data === "object" && "content" in data) {
+        return (data as { content?: Task[] }).content ?? [];
+      }
+
+      return [];
     } catch (error) {
       if (error instanceof TypeError) {
         throw new TasksApiError(
@@ -140,7 +150,12 @@ export const tasksApi = {
         headers: getAuthHeaders(),
       });
 
-      return handleResponse(response);
+      const data = await handleResponse(response);
+      if (!data) {
+        throw new TasksApiError("Task not found", response.status);
+      }
+
+      return data as Task;
     } catch (error) {
       if (error instanceof TypeError) {
         throw new TasksApiError(
@@ -159,7 +174,12 @@ export const tasksApi = {
         body: JSON.stringify(taskData),
       });
 
-      return handleResponse(response);
+      const data = await handleResponse(response);
+      if (!data) {
+        throw new TasksApiError("Empty create task response", response.status);
+      }
+
+      return data as Task;
     } catch (error) {
       if (error instanceof TypeError) {
         throw new TasksApiError(
@@ -178,7 +198,12 @@ export const tasksApi = {
         body: JSON.stringify(taskData),
       });
 
-      return handleResponse(response);
+      const data = await handleResponse(response);
+      if (!data) {
+        throw new TasksApiError("Empty update task response", response.status);
+      }
+
+      return data as Task;
     } catch (error) {
       if (error instanceof TypeError) {
         throw new TasksApiError(

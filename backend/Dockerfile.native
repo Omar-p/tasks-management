@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/graalvm-community:24.0.2 AS builder
+FROM ghcr.io/graalvm/graalvm-community:25.0.0 AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN ./mvnw dependency:go-offline -B
 
 COPY src src
 
-RUN ./mvnw clean -Pnative native:compile -DskipTests
+RUN ./mvnw clean -Dnet.bytebuddy.experimental=true -Pnative native:compile -DskipTests
 
 FROM alpine:3.19
 

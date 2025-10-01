@@ -9,7 +9,6 @@
 :toclevels: 3
 :sectlinks:
 :sectnums: true
-:snippets: {snippets}
 
 == Introduction
 

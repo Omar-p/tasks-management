@@ -12,6 +12,7 @@ interface TaskColumnProps {
   title: string;
   tasks: Task[];
   onTaskClick?: ((task: Task) => void) | undefined;
+  onTaskDelete?: ((task: Task) => void) | undefined;
 }
 
 const statusColors: Record<TaskStatus, string> = {
@@ -26,6 +27,7 @@ export function TaskColumn({
   title,
   tasks,
   onTaskClick,
+  onTaskDelete,
 }: TaskColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
@@ -56,6 +58,7 @@ export function TaskColumn({
               key={task.uuid}
               task={task}
               onClick={() => onTaskClick?.(task)}
+              onDelete={onTaskDelete}
             />
           ))}
         </div>

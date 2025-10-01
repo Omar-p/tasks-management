@@ -4,11 +4,12 @@ import { format } from "date-fns";
 import { Task, TaskPriority } from "@/services/tasks-api";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Calendar, UserRound } from "lucide-react";
+import { Calendar, Trash2, UserRound } from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
   onClick?: () => void;
+  onDelete?: ((task: Task) => void) | undefined;
 }
 
 const priorityConfig: Record<
@@ -21,7 +22,7 @@ const priorityConfig: Record<
   [TaskPriority.URGENT]: { variant: "destructive", label: "Urgent" },
 };
 
-export function TaskCard({ task, onClick }: TaskCardProps) {
+export function TaskCard({ task, onClick, onDelete }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -51,11 +52,33 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         isDragging && "opacity-50",
       )}
     >
-      <div className="flex items-start justify-between mb-2">
-        <h3 className="font-semibold text-sm line-clamp-2">{task.title}</h3>
-        <Badge variant={priorityInfo.variant} className="ml-2 shrink-0">
-          {priorityInfo.label}
-        </Badge>
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="flex items-start gap-2 flex-1 min-w-0">
+          <h3 className="font-semibold text-sm line-clamp-2 flex-1">
+            {task.title}
+          </h3>
+          <Badge
+            variant={priorityInfo.variant}
+            className="shrink-0 rounded-full px-3 py-1 text-xs font-medium"
+          >
+            {priorityInfo.label}
+          </Badge>
+        </div>
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(task);
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+            className="h-8 w-8 flex items-center justify-center rounded-full text-muted hover:text-destructive hover:bg-destructive/10 transition-colors focus:outline-none focus:ring-2 focus:ring-destructive/40"
+            aria-label="Delete task"
+            title="Delete task"
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       {task.description && (

@@ -15,15 +15,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useTask, useTaskMutations } from "@/hooks/useTaskMutations";
-import { TaskPriority, TaskStatus } from "@/services/tasks-api";
+import { Task, TaskPriority, TaskStatus } from "@/services/tasks-api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { updateTaskSchema, type UpdateTaskFormData } from "@/lib/validation";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface TaskDetailModalProps {
   taskUuid: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDeleteRequest?: (task: Task) => void;
 }
 
 const priorityConfig: Record<
@@ -36,17 +38,37 @@ const priorityConfig: Record<
   [TaskPriority.URGENT]: { variant: "destructive", label: "Urgent" },
 };
 
-const statusConfig = {
-  PENDING: { label: "To Do", color: "text-blue-500" },
-  IN_PROGRESS: { label: "In Progress", color: "text-yellow-500" },
-  COMPLETED: { label: "Completed", color: "text-green-500" },
-  CANCELLED: { label: "Cancelled", color: "text-gray-500" },
+const statusDisplayConfig: Record<
+  TaskStatus,
+  { label: string; colorClass: string; badgeClass: string }
+> = {
+  [TaskStatus.PENDING]: {
+    label: "To Do",
+    colorClass: "text-blue-500",
+    badgeClass: "bg-blue-500/10 text-blue-500 border border-blue-500/20",
+  },
+  [TaskStatus.IN_PROGRESS]: {
+    label: "In Progress",
+    colorClass: "text-amber-500",
+    badgeClass: "bg-amber-500/10 text-amber-600 border border-amber-500/20",
+  },
+  [TaskStatus.COMPLETED]: {
+    label: "Completed",
+    colorClass: "text-green-600",
+    badgeClass: "bg-green-500/10 text-green-600 border border-green-500/20",
+  },
+  [TaskStatus.CANCELLED]: {
+    label: "Cancelled",
+    colorClass: "text-slate-400",
+    badgeClass: "bg-slate-500/10 text-slate-400 border border-slate-500/20",
+  },
 };
 
 export function TaskDetailModal({
   taskUuid,
   open,
   onOpenChange,
+  onDeleteRequest,
 }: TaskDetailModalProps) {
   const { data: task, isLoading } = useTask(taskUuid || "");
   const { updateTask } = useTaskMutations();
@@ -118,19 +140,44 @@ export function TaskDetailModal({
         ) : task ? (
           <>
             <DialogHeader>
-              <div className="flex items-start justify-between gap-4">
-                <DialogTitle className="text-2xl">
-                  {isEditing ? "Edit Task" : task.title}
-                </DialogTitle>
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-2">
+                  <DialogTitle className="text-2xl font-semibold leading-tight">
+                    {isEditing ? "Edit Task" : task.title}
+                  </DialogTitle>
                   {!isEditing && (
-                    <Badge variant={priorityConfig[task.priority].variant}>
-                      {priorityConfig[task.priority].label}
-                    </Badge>
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <Badge
+                        variant={priorityConfig[task.priority].variant}
+                        className="rounded-full px-3 py-1 text-xs font-medium"
+                      >
+                        {priorityConfig[task.priority].label}
+                      </Badge>
+                    </div>
                   )}
+                </div>
+
+                <div className="flex items-center gap-2 sm:gap-3">
                   {!isEditing && (
-                    <Button size="sm" onClick={() => setIsEditing(true)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                       Edit
+                    </Button>
+                  )}
+                  {!isEditing && onDeleteRequest && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 border-destructive text-destructive hover:bg-destructive/10"
+                      onClick={() => onDeleteRequest(task)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      Delete
                     </Button>
                   )}
                 </div>
@@ -195,11 +242,13 @@ export function TaskDetailModal({
                         errors.status && "border-destructive",
                       )}
                     >
-                      {Object.entries(statusConfig).map(([key, config]) => (
-                        <option key={key} value={key}>
-                          {config.label}
-                        </option>
-                      ))}
+                      {Object.entries(statusDisplayConfig).map(
+                        ([key, config]) => (
+                          <option key={key} value={key}>
+                            {config.label}
+                          </option>
+                        ),
+                      )}
                     </Select>
                     {errors.status && (
                       <p className="text-sm text-destructive flex items-center gap-1 mt-1">
@@ -293,14 +342,20 @@ export function TaskDetailModal({
                     <label className="text-sm font-medium text-muted">
                       Status
                     </label>
-                    <p
-                      className={cn(
-                        "text-lg font-semibold mt-1",
-                        statusConfig[task.status].color,
-                      )}
-                    >
-                      {statusConfig[task.status].label}
-                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
+                          statusDisplayConfig[task.status].badgeClass,
+                        )}
+                      >
+                        <span
+                          className="h-2 w-2 rounded-full bg-current"
+                          aria-hidden="true"
+                        />
+                        {statusDisplayConfig[task.status].label}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Description */}

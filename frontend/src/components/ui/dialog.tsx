@@ -29,6 +29,16 @@ const getFocusableElements = (container: HTMLElement | null) => {
   ).filter((element) => !element.hasAttribute("data-focus-guard"));
 };
 
+let openDialogCount = 0;
+
+const updateBodyScrollLock = () => {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.body.style.overflow = openDialogCount > 0 ? "hidden" : "";
+};
+
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
   const [isMounted, setIsMounted] = React.useState(false);
 
@@ -37,15 +47,22 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
   }, []);
 
   React.useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+    if (!isMounted || typeof document === "undefined") {
+      return;
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+
+    if (open) {
+      openDialogCount += 1;
+      updateBodyScrollLock();
+
+      return () => {
+        openDialogCount = Math.max(0, openDialogCount - 1);
+        updateBodyScrollLock();
+      };
+    }
+
+    updateBodyScrollLock();
+  }, [open, isMounted]);
 
   const handleClose = React.useCallback(() => {
     onOpenChange?.(false);

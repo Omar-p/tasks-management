@@ -21,6 +21,7 @@ interface TaskBoardProps {
   tasks: Task[];
   onTaskStatusUpdate: (taskUuid: string, newStatus: TaskStatus) => void;
   onTaskClick?: (task: Task) => void;
+  onTaskDelete?: (task: Task) => void;
 }
 
 const columns: { status: TaskStatus; title: string }[] = [
@@ -34,6 +35,7 @@ export function TaskBoard({
   tasks,
   onTaskStatusUpdate,
   onTaskClick,
+  onTaskDelete,
 }: TaskBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [localTasks, setLocalTasks] = useState<Task[]>(tasks);
@@ -164,6 +166,7 @@ export function TaskBoard({
             title={column.title}
             tasks={tasksByStatus[column.status]}
             onTaskClick={onTaskClick}
+            onTaskDelete={onTaskDelete}
           />
         ))}
       </div>

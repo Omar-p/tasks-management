@@ -174,17 +174,14 @@ describe("TasksAPI", () => {
 
       const result = await tasksApi.createTask(taskData);
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        `${DEFAULT_API_BASE_URL}/tasks`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer test-token-123",
-          },
-          body: JSON.stringify(taskData),
+      expect(mockFetch).toHaveBeenCalledWith(`${DEFAULT_API_BASE_URL}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer test-token-123",
         },
-      );
+        body: JSON.stringify(taskData),
+      });
 
       expect(result).toEqual(mockCreatedTask);
     });

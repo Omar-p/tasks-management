@@ -26,15 +26,15 @@ describe("AuthAPI", () => {
       };
 
       const mockApiResponse = { accessToken: "access-token-123" };
-    const tokenSetter = vi.fn();
-    authApi.setTokenSetter(tokenSetter);
+      const tokenSetter = vi.fn();
+      authApi.setTokenSetter(tokenSetter);
 
-    mockFetch.mockResolvedValueOnce(createJsonResponse(mockApiResponse));
+      mockFetch.mockResolvedValueOnce(createJsonResponse(mockApiResponse));
 
-    const result = await authApi.signin(mockCredentials);
+      const result = await authApi.signin(mockCredentials);
 
-    expect(mockFetch).toHaveBeenNthCalledWith(
-      1,
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
         `${DEFAULT_API_BASE_URL}/auth/signin`,
         {
           method: "POST",
@@ -46,9 +46,9 @@ describe("AuthAPI", () => {
         },
       );
 
-    expect(result).toEqual({ accessToken: mockApiResponse.accessToken });
-    expect(tokenSetter).toHaveBeenCalledWith("access-token-123");
-  });
+      expect(result).toEqual({ accessToken: mockApiResponse.accessToken });
+      expect(tokenSetter).toHaveBeenCalledWith("access-token-123");
+    });
 
     it("should handle signin API error with field errors", async () => {
       const mockCredentials: LoginRequest = {

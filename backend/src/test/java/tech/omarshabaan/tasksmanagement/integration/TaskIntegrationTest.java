@@ -36,8 +36,6 @@ class TaskIntegrationTest extends BaseIT {
 
 	private String accessToken;
 
-	private User testUser;
-
 	@BeforeEach
 	void setUp() throws Exception {
 		// Clean up
@@ -50,7 +48,8 @@ class TaskIntegrationTest extends BaseIT {
 		Role userRole = roleRepository.findByName(RoleName.USER)
 			.orElseThrow(() -> new RuntimeException("USER role not found"));
 
-		UserSecurity userSecurity = new UserSecurity.Builder().email("taskuser@example.com")
+		UserSecurity userSecurity = UserSecurity.builder()
+			.email("taskuser@example.com")
 			.password(passwordEncoder.encode("P@ssw0rd123!"))
 			.locked(false)
 			.enabled(true)
@@ -59,8 +58,8 @@ class TaskIntegrationTest extends BaseIT {
 
 		userSecurity = userSecurityRepository.save(userSecurity);
 
-		testUser = new User("taskuser", userSecurity);
-		testUser = userRepository.save(testUser);
+		User testUser = new User("taskuser", userSecurity);
+		userRepository.save(testUser);
 
 		// Sign in to get access token
 		MvcResult signinResult = mockMvc
@@ -111,7 +110,7 @@ class TaskIntegrationTest extends BaseIT {
 		@SuppressWarnings("unchecked")
 		var tasks = (java.util.List<Map<String, Object>>) tasksPage.get("content");
 		assertThat(tasks).hasSize(1);
-		assertThat(tasks.get(0).get("title")).isEqualTo("Test Task");
+		assertThat(tasks.getFirst().get("title")).isEqualTo("Test Task");
 
 		// When - Update task
 		MvcResult updateResult = mockMvc

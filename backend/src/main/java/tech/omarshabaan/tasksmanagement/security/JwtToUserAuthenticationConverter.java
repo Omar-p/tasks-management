@@ -1,7 +1,5 @@
 package tech.omarshabaan.tasksmanagement.security;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,8 +7,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
-import tech.omarshabaan.tasksmanagement.entity.UserSecurity;
-import tech.omarshabaan.tasksmanagement.repository.auth.UserSecurityRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -42,7 +38,7 @@ public class JwtToUserAuthenticationConverter implements Converter<Jwt, Abstract
 			.collect(Collectors.toSet());
 
 		CustomUserDetails userDetails = new CustomUserDetails(userUuid, userSecurityUuid, email, grantedAuthorities,
-				true, false);
+				true, true);
 
 		return new UsernamePasswordAuthenticationToken(userDetails, null, grantedAuthorities);
 	}

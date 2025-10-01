@@ -50,7 +50,8 @@ public class UserAuthService implements UserDetailsService {
 		Role userRole = roleRepository.findByName(RoleName.USER)
 			.orElseThrow(() -> new RuntimeException("Default USER role not found"));
 
-		UserSecurity userSecurity = userSecurityRepository.save(new UserSecurity.Builder().email(request.email())
+		UserSecurity userSecurity = userSecurityRepository.save(UserSecurity.builder()
+			.email(request.email())
 			.password(passwordEncoder.encode(request.password()))
 			.enabled(true)
 			.locked(false)

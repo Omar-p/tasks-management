@@ -36,7 +36,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Build & Run Tests
+      - name: Build, Test, and Package REST Docs
         run: ./mvnw -Dnet.bytebuddy.experimental=true clean verify
 
       - name: Upload coverage report
@@ -45,6 +45,12 @@ jobs:
         with:
           files: ./backend/target/site/jacoco/jacoco.xml
           fail_ci_if_error: false
+
+      - name: Upload REST Docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-rest-docs
+          path: target/generated-docs/**
 
   # Build and push Docker image
   build-and-push:
@@ -58,6 +64,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Download REST Docs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-rest-docs
+          path: backend/target/generated-docs
+
+      - name: Stage REST Docs for native build
+        run: |
+          mkdir -p backend/src/main/resources/static
+          cp backend/target/generated-docs/docs.html backend/src/main/resources/static/docs.html
 
       - name: Authenticate to GitHub Container Registry (for GraalVM base image)
         uses: docker/login-action@v3

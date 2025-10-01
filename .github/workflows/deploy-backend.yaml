@@ -39,6 +39,17 @@ jobs:
       - name: Build and Test & Generate REST Docs
         run: ./mvnw -Dnet.bytebuddy.experimental=true clean verify
 
+      - name: Debug generated docs
+        run: |
+          echo "Contents of target directory:"
+          ls -R target | head -n 200 || true
+          if [ -d target/generated-docs ]; then
+            echo "Files under target/generated-docs:" 
+            find target/generated-docs -maxdepth 2 -type f
+          else
+            echo "target/generated-docs directory not found"
+          fi
+
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
         if: always()

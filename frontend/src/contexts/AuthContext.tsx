@@ -104,12 +104,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async () => {
     try {
       await authApi.logout();
-    } catch {
-      console.warn("Logout API call failed, clearing local state anyway");
+    } catch (error) {
+      console.warn("Logout API call failed, clearing local state anyway", error);
     } finally {
-      setAccessToken(null);
-      localStorage.removeItem("user_data");
-      setUser(null);
+      clearAuthState();
     }
   };
 

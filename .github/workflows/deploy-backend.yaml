@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-rest-docs
-          path: target/classes/static/docs.html
+          path: backend/target/classes/static/docs.html
 
   # Build and push Docker image
   build-and-push:

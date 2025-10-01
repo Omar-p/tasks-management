@@ -9,7 +9,7 @@
 :toclevels: 3
 :sectlinks:
 :sectnums: true
-:snippets: ../../../build/generated-snippets
+:snippets: {snippets}
 
 == Introduction
 

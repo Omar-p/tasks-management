@@ -1,5 +1,6 @@
 package tech.omarshabaan.tasksmanagement.config;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -90,6 +91,10 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.POST, "/api/auth/refresh")
 				.permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/auth/logout")
+				.permitAll()
+				.requestMatchers(HttpMethod.GET, "/docs.html")
+				.permitAll()
+				.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
 				.permitAll()
 				.requestMatchers("/actuator/health")
 				.permitAll()

@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  JAVA_VERSION: '25'
+  JAVA_VERSION: '24'
   AWS_REGION: 'eu-central-1'
 
 jobs:
@@ -49,7 +49,7 @@ jobs:
         run: ./mvnw spring-javaformat:validate
 
       - name: Build & run unit tests with coverage
-        run: ./mvnw  -Dnet.bytebuddy.experimental=true clean verify
+        run: ./mvnw clean verify
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4

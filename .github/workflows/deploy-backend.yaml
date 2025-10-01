@@ -14,7 +14,7 @@ permissions:
   packages: read   # required for ghcr.io base image
 
 env:
-  JAVA_VERSION: '25'
+  JAVA_VERSION: '24'
   AWS_REGION: 'eu-central-1'
 
 jobs:
@@ -37,7 +37,7 @@ jobs:
           cache: maven
 
       - name: Build and Test & Generate REST Docs
-        run: ./mvnw -Dnet.bytebuddy.experimental=true clean package
+        run: ./mvnw clean package
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4

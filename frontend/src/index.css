@@ -1,0 +1,189 @@
+@import "tailwindcss";
+@import "./styles/datepicker.css";
+
+:root {
+  /* Light theme colors */
+  --color-primary: #001081;
+  --color-secondary: #1eed93;
+  --color-background: #ffffff;
+  --color-surface: #f0f2f5;
+  --color-surface-alt: #e5e7eb;
+  --color-text: #000000;
+  --color-text-secondary: #333333;
+  --color-foreground: #000000;
+
+  /* Additional utility colors */
+  --color-border: #e2e8f0;
+  --color-destructive: #ef4444;
+  --color-success: #1eed93;
+  --color-muted: #64748b;
+  --color-muted-foreground: #475569;
+}
+
+.dark {
+  /* Improved dark theme colors */
+  --color-primary: #001081; /* Keep blue strong for brand identity */
+  --color-secondary: #1eed93; /* Accent green for highlights */
+  --color-background: #111318; /* Softer dark gray (not pure black) */
+  --color-surface: #1c1f26; /* Cards/forms */
+  --color-surface-alt: #2a2f3a; /* Hover / elevated surfaces */
+  --color-text: #f5f6f7; /* Near-white for better readability */
+  --color-text-secondary: #b0b6c1; /* Softer gray for secondary text */
+  --color-foreground: #f5f6f7;
+  --color-border: #2f3542; /* Subtle borders/dividers */
+  --color-destructive: #ff4d4f; /* Error red (for validation messages) */
+  --color-success: #1eed93; /* Use green accent for success */
+  --color-muted: #9ca3af;
+  --color-muted-foreground: #d1d5db;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+/* Custom utility classes */
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.text-textSecondary {
+  color: var(--color-text-secondary);
+}
+
+.text-foreground {
+  color: var(--color-foreground);
+}
+
+.text-destructive {
+  color: var(--color-destructive);
+}
+
+.text-success {
+  color: var(--color-success);
+}
+
+.text-muted {
+  color: var(--color-muted);
+}
+
+.text-muted-foreground {
+  color: var(--color-muted-foreground);
+}
+
+.bg-background {
+  background-color: var(--color-background);
+}
+
+.bg-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-surface-alt {
+  background-color: var(--color-surface-alt);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-destructive {
+  background-color: var(--color-destructive);
+}
+
+.bg-success {
+  background-color: var(--color-success);
+}
+
+.border {
+  border-color: var(--color-border);
+}
+
+.border-border {
+  border-color: var(--color-border);
+}
+
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+.border-secondary {
+  border-color: var(--color-secondary);
+}
+
+.border-destructive {
+  border-color: var(--color-destructive);
+}
+
+.border-success {
+  border-color: var(--color-success);
+}
+
+/* Form focus states */
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--color-primary);
+}
+
+.focus\:border-primary:focus {
+  border-color: var(--color-primary);
+}
+
+/* Button hover states */
+.hover\:bg-primary\/90:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, transparent);
+}
+
+.hover\:bg-primary\/20:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.hover\:bg-secondary\/90:hover {
+  background-color: color-mix(in srgb, var(--color-secondary) 90%, transparent);
+}
+
+.hover\:bg-surface-alt:hover {
+  background-color: var(--color-surface-alt);
+}
+
+.hover\:text-foreground:hover {
+  color: var(--color-foreground);
+}
+
+.hover\:text-text:hover {
+  color: var(--color-text);
+}
+
+.hover\:bg-destructive\/10:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-destructive) 10%,
+    transparent
+  );
+}
+
+.hover\:border-destructive\/30:hover {
+  border-color: color-mix(in srgb, var(--color-destructive) 30%, transparent);
+}
+
+/* Animations */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

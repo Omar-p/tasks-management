@@ -1,7 +1,11 @@
-import { renderHook, waitFor } from "@testing-library/react";
-import type { InfiniteData } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import {
+  QueryClient,
+  QueryClientProvider,
+  type InfiniteData,
+} from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useTaskMutations, useUserTasks } from "../useTaskMutations";
+import { useTaskMutations, useUserTasks } from "@/hooks";
 import { TestWrapper } from "@/test-utils";
 import {
   TaskPriority,
@@ -9,6 +13,8 @@ import {
   type PaginatedTasksResponse,
 } from "@/services/tasks-api";
 import { createEmptyResponse, createJsonResponse } from "@/test/fetch-helpers";
+import { AuthProvider } from "@/contexts";
+import React from "react";
 
 const fetchMock = vi.fn();
 
@@ -211,6 +217,111 @@ describe("useTaskMutations - Integration Tests", () => {
       expect(data.pages[0].page.number).toBe(0);
     });
 
+    it("should fetch the next page when requested", async () => {
+      const pageSize = 1;
+      // Backend uses zero-based pagination
+      const firstPage = {
+        content: [
+          {
+            uuid: "task-1",
+            title: "Task 1",
+            status: TaskStatus.PENDING,
+            priority: TaskPriority.MEDIUM,
+            dueDate: "2025-12-31T12:00:00Z",
+          },
+        ],
+        page: {
+          number: 0, // zero-based
+          size: pageSize,
+          totalElements: 2,
+          totalPages: 2,
+        },
+      } satisfies PaginatedTasksResponse;
+
+      const secondPage = {
+        content: [
+          {
+            uuid: "task-2",
+            title: "Task 2",
+            status: TaskStatus.IN_PROGRESS,
+            priority: TaskPriority.HIGH,
+            dueDate: "2025-12-30T12:00:00Z",
+          },
+        ],
+        page: {
+          number: 1, // zero-based
+          size: pageSize,
+          totalElements: 2,
+          totalPages: 2,
+        },
+      } satisfies PaginatedTasksResponse;
+
+      fetchMock
+        .mockResolvedValueOnce(createJsonResponse(firstPage))
+        .mockResolvedValueOnce(createJsonResponse(secondPage));
+
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+          },
+          mutations: {
+            retry: false,
+          },
+        },
+      });
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      );
+
+      const { result } = renderHook(() => useUserTasks(undefined, pageSize), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      // Wait for hasNextPage to be computed before fetching next page
+      await waitFor(() => {
+        expect(result.current.hasNextPage).toBe(true);
+      });
+
+      await act(async () => {
+        await result.current.fetchNextPage();
+      });
+
+      await waitFor(() => {
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+      });
+
+      await waitFor(() => {
+        expect(result.current.isFetchingNextPage).toBe(false);
+      });
+
+      await waitFor(() => {
+        const data = result.current.data as
+          | InfiniteData<PaginatedTasksResponse>
+          | undefined;
+        expect(data?.pages?.length).toBe(2);
+      });
+
+      const data = result.current.data as
+        | InfiniteData<PaginatedTasksResponse>
+        | undefined;
+      expect(data).toBeDefined();
+      if (!data) return;
+
+      expect(data.pages[1].page.number).toBe(1);
+      expect(data.pages[1].content[0].uuid).toBe("task-2");
+      expect(result.current.hasNextPage).toBe(false);
+
+      queryClient.clear();
+    });
+
     it("should handle fetch tasks error", async () => {
       fetchMock.mockResolvedValueOnce(
         createJsonResponse({ message: "Failed" }, { status: 500 }),
@@ -225,4 +336,179 @@ describe("useTaskMutations - Integration Tests", () => {
       });
     });
   });
+
+  describe("optimistic cache updates", () => {
+    it("should update task across cached pages on mutate", async () => {
+      const queryClient = createQueryClient();
+      const wrapper = createWrapper(queryClient);
+
+      const firstTask = {
+        uuid: "task-1",
+        title: "Task 1",
+        status: TaskStatus.PENDING,
+        priority: TaskPriority.MEDIUM,
+        dueDate: "2025-12-31T12:00:00Z",
+      };
+      const secondTask = {
+        uuid: "task-2",
+        title: "Task 2",
+        status: TaskStatus.IN_PROGRESS,
+        priority: TaskPriority.HIGH,
+        dueDate: "2025-12-30T12:00:00Z",
+      };
+
+      const initialData: InfiniteData<PaginatedTasksResponse> = {
+        pageParams: [0, 1],
+        pages: [
+          {
+            content: [firstTask],
+            page: {
+              number: 0,
+              size: 20,
+              totalElements: 2,
+              totalPages: 1,
+            },
+          },
+          {
+            content: [secondTask],
+            page: {
+              number: 1,
+              size: 20,
+              totalElements: 2,
+              totalPages: 1,
+            },
+          },
+        ],
+      };
+
+      queryClient.setQueryData(
+        ["tasks", "user", { status: null, pageSize: 20 }],
+        initialData,
+      );
+
+      fetchMock.mockResolvedValueOnce(
+        createJsonResponse({ ...secondTask, status: TaskStatus.COMPLETED }),
+      );
+
+      const { result } = renderHook(() => useTaskMutations(), {
+        wrapper,
+      });
+
+      act(() => {
+        result.current.updateTask.mutate({
+          uuid: secondTask.uuid,
+          taskData: { status: TaskStatus.COMPLETED },
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.updateTask.isSuccess).toBe(true);
+      });
+
+      const cached = queryClient.getQueryData([
+        "tasks",
+        "user",
+        { status: null, pageSize: 20 },
+      ]) as InfiniteData<PaginatedTasksResponse> | undefined;
+
+      expect(cached?.pages[1].content[0].status).toBe(TaskStatus.COMPLETED);
+
+      queryClient.clear();
+    });
+
+    it("should remove deleted task from cached pages", async () => {
+      const queryClient = createQueryClient();
+      const wrapper = createWrapper(queryClient);
+
+      const firstTask = {
+        uuid: "task-1",
+        title: "Task 1",
+        status: TaskStatus.PENDING,
+        priority: TaskPriority.MEDIUM,
+        dueDate: "2025-12-31T12:00:00Z",
+      };
+      const secondTask = {
+        uuid: "task-2",
+        title: "Task 2",
+        status: TaskStatus.IN_PROGRESS,
+        priority: TaskPriority.HIGH,
+        dueDate: "2025-12-30T12:00:00Z",
+      };
+
+      const initialData: InfiniteData<PaginatedTasksResponse> = {
+        pageParams: [0, 1],
+        pages: [
+          {
+            content: [firstTask],
+            page: {
+              number: 0,
+              size: 20,
+              totalElements: 2,
+              totalPages: 1,
+            },
+          },
+          {
+            content: [secondTask],
+            page: {
+              number: 1,
+              size: 20,
+              totalElements: 2,
+              totalPages: 1,
+            },
+          },
+        ],
+      };
+
+      queryClient.setQueryData(
+        ["tasks", "user", { status: null, pageSize: 20 }],
+        initialData,
+      );
+
+      fetchMock.mockResolvedValueOnce(createEmptyResponse({ status: 204 }));
+
+      const { result } = renderHook(() => useTaskMutations(), {
+        wrapper,
+      });
+
+      act(() => {
+        result.current.deleteTask.mutate(secondTask.uuid);
+      });
+
+      await waitFor(() => {
+        expect(result.current.deleteTask.isSuccess).toBe(true);
+      });
+
+      const cached = queryClient.getQueryData([
+        "tasks",
+        "user",
+        { status: null, pageSize: 20 },
+      ]) as InfiniteData<PaginatedTasksResponse> | undefined;
+
+      expect(cached?.pages[0].content).toHaveLength(1);
+      expect(cached?.pages[1].content).toHaveLength(0);
+      expect(cached?.pages[0].page.totalElements).toBe(2);
+      expect(cached?.pages[1].page.totalElements).toBe(1);
+
+      queryClient.clear();
+    });
+  });
 });
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+
+const createWrapper =
+  (client: QueryClient) =>
+  ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={client}>
+      <AuthProvider>{children}</AuthProvider>
+    </QueryClientProvider>
+  );

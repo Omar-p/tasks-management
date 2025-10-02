@@ -1,4 +1,3 @@
-src/main/resources/certs/*
 target/
 .git/
 .idea/

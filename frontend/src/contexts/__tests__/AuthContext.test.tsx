@@ -1,9 +1,11 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AuthProvider } from "../AuthContext";
 import { useAuth } from "../auth.types";
 import { authApi } from "@/services/auth-api";
 import { tasksApi } from "@/services/tasks-api";
+import type { ReactElement, ReactNode } from "react";
 
 // Mock the auth API
 vi.mock("@/services/auth-api", () => ({
@@ -83,14 +85,23 @@ Object.defineProperty(window, "localStorage", {
   writable: true,
 });
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <AuthProvider>{children}</AuthProvider>
-);
+let queryClient: QueryClient;
+let wrapper: ({ children }: { children: ReactNode }) => ReactElement;
 
 describe("AuthContext", () => {
   beforeEach(() => {
     mockLocalStorage.clear();
     vi.clearAllMocks();
+    queryClient = new QueryClient();
+    wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>{children}</AuthProvider>
+      </QueryClientProvider>
+    );
+  });
+
+  afterEach(() => {
+    queryClient.clear();
   });
 
   it("should throw error when useAuth is used outside AuthProvider", () => {
@@ -254,6 +265,9 @@ describe("AuthContext", () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
+    const tasksQueryKey = ["tasks", "user"] as const;
+    queryClient.setQueryData(tasksQueryKey, { foo: "bar" });
+
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
@@ -269,6 +283,7 @@ describe("AuthContext", () => {
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.getAccessToken()).toBe(null);
     expect(mockLocalStorage.getItem("user_data")).toBe(null);
+    expect(queryClient.getQueryData(tasksQueryKey)).toBeUndefined();
   });
 
   it("should store tokens in memory correctly", async () => {
@@ -287,6 +302,30 @@ describe("AuthContext", () => {
     });
 
     expect(result.current.getAccessToken()).toBe("test-access-token");
+  });
+
+  it("should invalidate task queries when tokens are updated", async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    const tokens = {
+      accessToken: "new-token",
+    };
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    const queryKey = ["tasks", "user"] as const;
+    queryClient.setQueryData(queryKey, { foo: "bar" });
+
+    act(() => {
+      result.current.setTokens(tokens);
+    });
+
+    await waitFor(() => {
+      const state = queryClient.getQueryState(queryKey);
+      expect(state?.isInvalidated).toBe(true);
+    });
   });
 
   it("should set up token getters for both auth and tasks APIs", () => {

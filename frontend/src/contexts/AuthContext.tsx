@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { User, AuthTokens, AuthContextType } from "./auth.types";
 import { AuthContext } from "./auth.types";
 import { authApi } from "@/services/auth-api";
@@ -13,22 +14,37 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const queryClient = useQueryClient();
   const accessTokenRef = useRef(accessToken);
   accessTokenRef.current = accessToken;
   const hasInitializedRef = useRef(false);
 
+  const handleAccessTokenChange = useCallback(
+    (token: string | null) => {
+      accessTokenRef.current = token;
+      setAccessToken(token);
+      if (token) {
+        void queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      }
+    },
+    [queryClient],
+  );
+
   const clearAuthState = useCallback(() => {
-    setAccessToken(null);
+    handleAccessTokenChange(null);
     localStorage.removeItem("user_data");
     setUser(null);
-  }, []);
+    queryClient.clear();
+  }, [handleAccessTokenChange, queryClient]);
 
   useEffect(() => {
     authApi.setTokenGetter(() => accessTokenRef.current);
-    authApi.setTokenSetter(setAccessToken);
+    authApi.setTokenSetter((token: string) => {
+      handleAccessTokenChange(token);
+    });
     authApi.setLogoutHandler(clearAuthState);
     tasksApi.setTokenGetter(() => accessTokenRef.current);
-  }, [clearAuthState]);
+  }, [clearAuthState, handleAccessTokenChange]);
 
   useEffect(() => {
     if (hasInitializedRef.current) {
@@ -47,7 +63,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Try to refresh access token on app load
           try {
             const refreshResponse = await authApi.refresh();
-            setAccessToken(refreshResponse.accessToken);
+            handleAccessTokenChange(refreshResponse.accessToken);
             console.log("Token refresh successful on app load");
           } catch (error) {
             console.error("Token refresh failed on app load:", error);
@@ -63,22 +79,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     initializeAuth();
-  }, [clearAuthState]);
+  }, [clearAuthState, handleAccessTokenChange]);
 
-  const setTokens = (tokens: AuthTokens) => {
-    setAccessToken(tokens.accessToken);
-    accessTokenRef.current = tokens.accessToken;
-    // Get user data from localStorage that was set during login
-    const userData = localStorage.getItem("user_data");
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Failed to parse user data during setTokens:", error);
+  const setTokens = useCallback(
+    (tokens: AuthTokens) => {
+      handleAccessTokenChange(tokens.accessToken);
+      // Get user data from localStorage that was set during login
+      const userData = localStorage.getItem("user_data");
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+        } catch (error) {
+          console.error("Failed to parse user data during setTokens:", error);
+        }
       }
-    }
-  };
+    },
+    [handleAccessTokenChange],
+  );
 
   const getAccessToken = (): string | null => {
     return accessToken;

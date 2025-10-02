@@ -13,6 +13,7 @@ import tech.omarshabaan.tasksmanagement.entity.TaskStatus;
 import tech.omarshabaan.tasksmanagement.entity.User;
 import tech.omarshabaan.tasksmanagement.repository.task.TaskRepository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -59,31 +60,22 @@ public class TaskService {
 		return mapToGetTaskResponse(task);
 	}
 
-	public GetTaskResponse updateTask(UUID taskUuid, UpdateTaskRequest request, UUID userUuid) {
-		User user = userLookupService.findUserByUuid(userUuid);
+  public GetTaskResponse updateTask(UUID taskUuid, UpdateTaskRequest request, UUID userUuid) {
+    User user = userLookupService.findUserByUuid(userUuid);
 
-		Task task = taskRepository.findByUuidAndAssignedTo(taskUuid, user)
-			.orElseThrow(() -> new RuntimeException("Task not found"));
+    Task task = taskRepository.findByUuidAndAssignedTo(taskUuid, user)
+        .orElseThrow(() -> new RuntimeException("Task not found"));
 
-		if (request.title() != null) {
-			task.setTitle(request.title());
-		}
-		if (request.description() != null) {
-			task.setDescription(request.description());
-		}
-		if (request.status() != null) {
-			task.setStatus(request.status());
-		}
-		if (request.priority() != null) {
-			task.setPriority(request.priority());
-		}
-		if (request.dueDate() != null) {
-			task.setDueDate(request.dueDate());
-		}
+    Optional.ofNullable(request.title()).ifPresent(task::setTitle);
+    Optional.ofNullable(request.description()).ifPresent(task::setDescription);
+    Optional.ofNullable(request.status()).ifPresent(task::setStatus);
+    Optional.ofNullable(request.priority()).ifPresent(task::setPriority);
+    Optional.ofNullable(request.dueDate()).ifPresent(task::setDueDate);
 
-		Task savedTask = taskRepository.save(task);
-		return mapToGetTaskResponse(savedTask);
-	}
+    Task savedTask = taskRepository.save(task);
+    return mapToGetTaskResponse(savedTask);
+  }
+
 
 	public void deleteTask(UUID taskUuid, UUID userUuid) {
 		User user = userLookupService.findUserByUuid(userUuid);

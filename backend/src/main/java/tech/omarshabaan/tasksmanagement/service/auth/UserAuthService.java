@@ -83,8 +83,6 @@ public class UserAuthService implements UserDetailsService {
 			.map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
 			.forEach(authorities::add);
 
-		// Build CustomUserDetails with User UUID as the main identifier
-		// Include password for authentication (credential verification)
 		return new CustomUserDetails(user.getUuid(), userSecurity.getUuid(), userSecurity.getEmail(),
 				userSecurity.getPassword(), authorities, userSecurity.isEnabled(), !userSecurity.isLocked());
 	}

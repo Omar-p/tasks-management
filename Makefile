@@ -84,7 +84,7 @@ db-reset: ## Reset PostgreSQL (WARNING: This will delete all data)
 	@echo "PostgreSQL reset complete!"
 
 db-shell: ## Access PostgreSQL shell
-	@docker compose exec postgres psql -U myuser -d mydatabase
+	@docker compose exec postgres psql -U myuser -d postgres
 
 # Health checks
 health: ## Check health of all services

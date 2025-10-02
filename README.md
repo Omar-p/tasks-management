@@ -338,14 +338,11 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in keypair.pem -out priv
 The backend uses **Testcontainers** to spin up real PostgreSQL instances for integration tests, ensuring tests run against the actual database without mocking.
 
 ```bash
-# Run all tests
-make backend-test
 
 # Or using Maven directly
-cd backend && ./mvnw test
+cd backend && ./mvnw -Dnet.bytebuddy.experimental=true clean verify
 
-# Run with coverage
-cd backend && ./mvnw test jacoco:report
+
 ```
 
 **Testcontainers Configuration**:
@@ -367,6 +364,73 @@ npm test
 npm run test:coverage
 ```
 
+## 🔄 CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment with separate workflows for backend and frontend.
+
+### Backend CI/CD
+
+**CI Pipeline** (`.github/workflows/backend-ci.yaml`)
+- **Trigger**: Pull requests to `main` branch affecting `backend/` files
+- **Java Version**: 25 (Eclipse Temurin)
+- **Steps**:
+  1. Code formatting validation with `spring-javaformat`
+  2. Build and run tests with coverage using Testcontainers
+  3. Upload coverage reports to Codecov
+- **Caching**: Maven dependencies cached for faster builds
+
+**Deployment Pipeline** (`.github/workflows/deploy-backend.yaml`)
+- **Trigger**: Push to `main` branch affecting `backend/` files
+- **Authentication**: AWS credentials via OIDC (no long-lived keys)
+- **Build Process**:
+  1. Build & test with Spring REST Docs generation
+  2. Build GraalVM native image using `Dockerfile.native`
+  3. Swap to `.dockerignore.prod` (excludes RSA certs)
+  4. Push to Amazon ECR with timestamp + commit SHA tag
+- **Deployment**:
+  1. Update ECS task definition with new image
+  2. Deploy to ECS cluster with rolling update
+  3. Wait for service stability (CloudFormation stack health)
+
+### Frontend CI/CD
+
+**CI Pipeline** (`.github/workflows/frontend-ci.yaml`)
+- **Trigger**: Pull requests to `main` branch affecting `frontend/` files
+- **Node Version**: 23.11.0
+- **Steps**:
+  1. Run ESLint for code quality checks
+  2. Run Prettier for formatting validation
+  3. Execute tests with coverage
+  4. Upload coverage to Codecov
+
+**Deployment Pipeline** (`.github/workflows/deploy-frontend.yaml`)
+- **Trigger**: Push to `main` branch affecting `frontend/` files
+- **Build Process**:
+  1. Build optimized production bundle with Vite
+  2. Generate source maps and assets
+- **Deployment**:
+  1. Sync build artifacts to S3 bucket
+  2. Invalidate CloudFront cache for immediate updates
+  3. Verify deployment via CloudFront distribution
+
+### Key Features
+
+- **Fast deployments**:
+  - Backend: ~5 second startup time with GraalVM native image (1GB RAM)
+  - Frontend: Instant via CloudFront cache invalidation
+  - Small downtime window during ECS task replacement (cost-optimized single-instance setup)
+- **Security**: OIDC authentication, no long-lived AWS credentials
+- **Observability**: Coverage reports, deployment logs, CloudWatch integration
+- **Automated testing**: Testcontainers for backend, Vitest for frontend
+- **Docker layer caching**: GitHub Actions cache for faster builds
+
+### Possible Improvements
+
+- **Zero-downtime deployments**: Implement ECS blue/green deployment with ALB target groups
+- **Automatic rollback**: Add CloudWatch alarms to trigger automatic rollback on deployment failures
+- **Multi-AZ deployment**: Run multiple ECS tasks across availability zones (higher cost)
+- **Health checks**: Enhanced ECS health checks with custom application endpoints
+
 ## 🚀 Deployment
 
 ### Docker Configuration
@@ -376,15 +440,6 @@ The project uses different Docker configurations for development and production:
 - **Development** (`Dockerfile`): Uses `.dockerignore` which includes RSA certs for local development
 - **Production** (`Dockerfile.native`): GitHub Actions swaps to `.dockerignore.prod` which excludes RSA certs (keys are injected via secrets)
 
-### Building Production Images
-
-```bash
-# Build production images
-make prod-build
-
-# Start production environment
-make prod-up
-```
 
 ### AWS Infrastructure
 

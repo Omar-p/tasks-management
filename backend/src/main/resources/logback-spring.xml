@@ -1,0 +1,32 @@
+<configuration>
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="de.siegmar.logbackawslogsjsonencoder.AwsJsonLogEncoder">
+        </encoder>
+    </appender>
+
+    <appender name="PLAIN" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                %cyan(%d{ISO8601}) %highlight(%-5level) [%blue(%-30t)] %msg%n
+            </pattern>
+        </layout>
+    </appender>
+
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="PLAIN"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="test">
+        <root level="INFO">
+            <appender-ref ref="PLAIN"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="default">
+        <root level="INFO">
+            <appender-ref ref="JSON"/>
+        </root>
+    </springProfile>
+</configuration>

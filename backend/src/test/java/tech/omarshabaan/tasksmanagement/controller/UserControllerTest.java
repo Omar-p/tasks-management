@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tech.omarshabaan.tasksmanagement.config.RestDocsTestConfiguration;
 import tech.omarshabaan.tasksmanagement.config.SecurityConfig;
 import tech.omarshabaan.tasksmanagement.controller.user.UserController;
 import tech.omarshabaan.tasksmanagement.dto.user.UserProfileResponse;
@@ -40,14 +41,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static tech.omarshabaan.tasksmanagement.controller.UserControllerTest.UserControllerSnippets.userProfileResponseFields;
 
-/**
- * WebMvcTest for UserController with comprehensive REST documentation. Uses BDD style
- * testing with BDDMockito and BDDAssertions.
- */
 @WebMvcTest(UserController.class)
 @AutoConfigureRestDocs
 @Import({ SecurityConfig.class, GlobalExceptionHandler.class, DelegatedAuthenticationEntryPoint.class,
-		DelegatedAccessDeniedHandler.class, JwtToUserAuthenticationConverter.class })
+		DelegatedAccessDeniedHandler.class, JwtToUserAuthenticationConverter.class, RestDocsTestConfiguration.class })
 class UserControllerTest {
 
 	@Autowired

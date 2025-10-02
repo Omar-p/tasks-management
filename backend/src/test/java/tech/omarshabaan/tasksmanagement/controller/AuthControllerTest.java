@@ -14,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tech.omarshabaan.tasksmanagement.TestObjects;
 import tech.omarshabaan.tasksmanagement.config.CorsProperties;
+import tech.omarshabaan.tasksmanagement.config.RestDocsTestConfiguration;
 import tech.omarshabaan.tasksmanagement.config.RsaKeyProperties;
 import tech.omarshabaan.tasksmanagement.config.SecurityConfig;
 import tech.omarshabaan.tasksmanagement.controller.auth.AuthController;
@@ -48,14 +49,10 @@ import static tech.omarshabaan.tasksmanagement.controller.AuthControllerTest.Aut
 import static tech.omarshabaan.tasksmanagement.controller.AuthControllerTest.AuthControllerSnippets.signinResponseFields;
 import static tech.omarshabaan.tasksmanagement.controller.AuthControllerTest.AuthControllerSnippets.signupRequestFields;
 
-/**
- * WebMvcTest for AuthController with comprehensive REST documentation. Uses BDD style
- * testing with BDDMockito and BDDAssertions.
- */
 @WebMvcTest(AuthController.class)
 @AutoConfigureRestDocs
 @Import({ SecurityConfig.class, GlobalExceptionHandler.class, DelegatedAuthenticationEntryPoint.class,
-		DelegatedAccessDeniedHandler.class })
+		DelegatedAccessDeniedHandler.class, RestDocsTestConfiguration.class })
 class AuthControllerTest {
 
 	@Autowired

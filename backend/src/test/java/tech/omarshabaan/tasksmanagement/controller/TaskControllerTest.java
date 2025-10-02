@@ -18,6 +18,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tech.omarshabaan.tasksmanagement.config.CorsProperties;
+import tech.omarshabaan.tasksmanagement.config.RestDocsTestConfiguration;
 import tech.omarshabaan.tasksmanagement.config.RsaKeyProperties;
 import tech.omarshabaan.tasksmanagement.config.SecurityConfig;
 import tech.omarshabaan.tasksmanagement.controller.task.TaskController;
@@ -72,14 +73,10 @@ import static tech.omarshabaan.tasksmanagement.controller.TaskControllerTest.Tas
 import static tech.omarshabaan.tasksmanagement.controller.TaskControllerTest.TaskControllerSnippets.updateTaskRequestFields;
 import static tech.omarshabaan.tasksmanagement.restdocs.CommonRestDocsDescriptor.*;
 
-/**
- * WebMvcTest for TaskController with comprehensive REST documentation. Uses BDD style
- * testing with BDDMockito and BDDAssertions.
- */
 @WebMvcTest(TaskController.class)
 @AutoConfigureRestDocs
 @Import({ SecurityConfig.class, GlobalExceptionHandler.class, DelegatedAuthenticationEntryPoint.class,
-		DelegatedAccessDeniedHandler.class })
+		DelegatedAccessDeniedHandler.class, RestDocsTestConfiguration.class })
 class TaskControllerTest {
 
 	@Autowired

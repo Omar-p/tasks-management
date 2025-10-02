@@ -9,7 +9,7 @@ A full-stack task management application built with Spring Boot (Backend) and Re
 
 - **Frontend** – React 19, TypeScript, Vite, Tailwind CSS, `@dnd-kit` for drag-and-drop, React Query for data fetching.
 - **Backend** – Spring Boot 3 (Java 25), Spring Security (JWT), Spring Data JPA, PostgreSQL 17, structured JSON logging with MDC enrichment.
-- **Infrastructure** – Single EC2/VM host running Docker Compose (Spring Boot backend + built React frontend) behind Nginx, with CloudWatch Agent shipping logs and metrics.
+- **Infrastructure** – ECS cluster backed by EC2 host running Docker (Spring Boot backend) + RDS + (S3+Cloudfront for frontend), with CloudWatch Agent shipping logs and metrics.
 
 See the Decision Records in [`docs/adr`](./docs/adr) for detailed rationale.
 
